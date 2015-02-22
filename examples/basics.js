@@ -4,8 +4,8 @@ var esp3parser = require('../ESP3Parser');
 
 tcm310 = new serialport.SerialPort('/dev/ttyS2', {
 	baudrate: 57600,
-//	parser: serialport.parsers.raw
-	parser: esp3parser
+	parser: serialport.parsers.raw
+//	parser: esp3parser
 }, false);
 
 tcm310.open(function (error) {
@@ -39,10 +39,10 @@ tcm310.open(function (error) {
 			);
 
 			tcm310.on('data', function(esp3Packet) {
-//				console.log(ESP3PacketRawAsString(esp3Packet) + " -> To see structure from ESP3Packet, comment line 42 and uncomment line 43.");
+				console.log(ESP3PacketRawAsString(esp3Packet) + " -> To see structure from ESP3Packet, comment line 42 and uncomment line 43.");
 //				console.log(ESP3PacketStructure(esp3Packet) + "\n-> To see description for ESP3Packet, comment line 43 and uncomment line 44.");
 //				console.log(ESP3PacketDescription(esp3Packet) + "-> if you have an EnOcean Rocker Switch(PTM200), comment line 44 and uncomment line 45 to see how to fetch events from.");
-				console.log(ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet));
+//				console.log(ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet));
 			});
 		}
 	}
