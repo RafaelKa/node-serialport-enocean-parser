@@ -10,7 +10,7 @@
 	},
 	"keywords": ["ESP3", "EnOcean", "node-serialport", "TCM310"],
 	"author": "Rafael Kähm <rafael@kaehms.de> (http://www.kaehms.de/)",
-	"license": "MIT",
+	"license": "WTFPL",
 	"bugs": {
 		"url": "https://github.com/RafaelKa/node-serialport-enocean-parser/issues"
 	},
