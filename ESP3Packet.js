@@ -46,7 +46,7 @@ function ESP3Packet() {
 		optionalLength: undefined,
 		packetType: undefined
 	},
-		this.crc8Header = undefined;
+	this.crc8Header = undefined;
 	this.data = undefined;
 	this.optionalData = undefined;
 	this.crc8Data = undefined;
