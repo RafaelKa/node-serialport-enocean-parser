@@ -50,4 +50,19 @@ function ESP3Packet() {
 	this.data = undefined;
 	this.optionalData = undefined;
 	this.crc8Data = undefined;
+	this.getRawBuffer = function () {
+		return Buffer.concat(
+			[
+				this.syncByte,
+				this.header.dataLength,
+				this.header.optionalLength,
+				this.header.packetType,
+				this.crc8Header,
+				this.data,
+				this.optionalData,
+				this.crc8Data
+			],
+			8 + this.header.dataLength + this.header.optionalLength
+		);
+	}
 };
