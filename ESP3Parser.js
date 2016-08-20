@@ -82,6 +82,7 @@ function ESP3() {
 		currentESP3Packet.data = new Buffer(currentESP3Packet.header.dataLength);
 		// @todo: is 0 bytes buffer really needed? -> maybe "if (currentESP3Packet.header.optionalLength > 0)"?
 		currentESP3Packet.optionalData = new Buffer(currentESP3Packet.header.optionalLength);
+		currentESP3Packet.header.raw = Buffer.concat ([new Buffer([0x55]),tmp.header,new Buffer([byte])])
 		callbackForNextByte = fillData;
 	}
 
@@ -130,6 +131,7 @@ function ESP3() {
 			// todo : Log this fail
 			return;
 		}
+		currentESP3Packet.raw = Buffer.concat([currentESP3Packet.header.raw,datas,new Buffer([byte])])
 		currentESP3Packet.crc8Data = byte;
 		emitFetchedESP3Packet();
 	}
