@@ -14,5 +14,14 @@
 	"bugs": {
 		"url": "https://github.com/RafaelKa/node-serialport-enocean-parser/issues"
 	},
-	"homepage": "https://github.com/RafaelKa/node-serialport-enocean-parser"
+	"homepage": "https://github.com/RafaelKa/node-serialport-enocean-parser",
+	"devDependencies": {
+		"serialport": "*",
+		"chai": "^3.3.0",
+		"sinon": "^1.17.3",
+		"mocha": "^3.0.0"
+	},
+	"scripts": {
+		"test": "mocha --recursive test"
+	}
 }
