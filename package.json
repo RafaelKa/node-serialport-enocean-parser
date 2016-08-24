@@ -1,6 +1,6 @@
 {
 	"name": "serialport-enocean-parser",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "ESP3 parser for nodes serialport. Fetches EnOcean Serial Protocol 3 (ESP3) packets from node-serialport.",
 
 	"main": "ESP3Parser.js",
