@@ -13,29 +13,30 @@
  * +---------------+ -----
  * |   Sync Byte   |   1
  * +---------------+ - + - ----------------------+
- * |    Header     |   2    Data length          |
+ * |               |   2    Data length          |
  * |               |   +                         |
- * |               |   1    Optional Data length |
+ * |    Header     |   1    Optional Data length |
  * |               |   +                         |
  * |               |   1    Packet type          |
  * +---------------+ - + - ----------------------+
  * |  CRC8 Header  |   1
  * +---------------+ - + -
- * |     Data      |
- * |               |   1
- * |               |   +
- * |               |   X
+ * |               |
+ * |               |
+ * |     Data      |   X
+ * |               |
  * |               |
  * +---------------+ - + -
- * | Optional Data |
- * |               |   0
- * |               |   +
- * |               |   Y
+ * |               |
+ * |               |
+ * | Optional Data |   Y
+ * |               |
  * |               |
  * +---------------+ - + -
  * |   CRC8 Data   |   1
  * +---------------+ -----
  *
+ * also full ESP3 Packet Length = 7 + X(Data length) + Y(Optional Data length)
  */
 module.exports = ESP3Packet;
 
@@ -50,4 +51,21 @@ function ESP3Packet() {
 	this.data = undefined;
 	this.optionalData = undefined;
 	this.crc8Data = undefined;
+	this.getRawBuffer = function () {
+		var dataLengthBuffer = new Buffer(2);
+		dataLengthBuffer.writeInt16BE(this.header.dataLength)
+		return Buffer.concat(
+			[
+				new Buffer([this.syncByte]),
+				dataLengthBuffer,
+				new Buffer([this.header.optionalLength]),
+				new Buffer([this.header.packetType]),
+				new Buffer([this.crc8Header]),
+				this.data,
+				this.optionalData,
+				new Buffer([this.crc8Data])
+			],
+			7 + this.header.dataLength + this.header.optionalLength
+		);
+	}
 };
