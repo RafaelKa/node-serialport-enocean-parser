@@ -97,7 +97,12 @@ function ESP3() {
 			return;
 		}
 		currentESP3Packet.data.fill(byte, tmp.dataOffset);
-		callbackForNextByte = fillOptionalData;
+
+		if(currentESP3Packet.header.optionalLength > 0) {
+			callbackForNextByte = fillOptionalData;
+			return;
+ 		}
+		callbackForNextByte = fetchCRC8ForDataAndCheck;
 	}
 
 	/**
