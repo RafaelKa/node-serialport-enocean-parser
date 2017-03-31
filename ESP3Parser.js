@@ -98,12 +98,11 @@ function ESP3() {
 		}
 		currentESP3Packet.data.fill(byte, tmp.dataOffset);
 
-		//fix error with optionaldata awaited when none is actually in the telegram
 		if(currentESP3Packet.header.optionalLength > 0) {
- 			callbackForNextByte = fillOptionalData;
- 		}else{
- 			callbackForNextByte = fetchCRC8ForDataAndCheck;
+			callbackForNextByte = fillOptionalData;
+			return;
  		}
+		callbackForNextByte = fetchCRC8ForDataAndCheck;
 	}
 
 	/**
