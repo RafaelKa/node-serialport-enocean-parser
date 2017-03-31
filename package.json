@@ -1,13 +1,18 @@
 {
   "name": "serialport-enocean-parser",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "ESP3 parser for nodes serialport. Fetches EnOcean Serial Protocol 3 (ESP3) packets from node-serialport.",
   "main": "ESP3Parser.js",
   "repository": {
     "type": "git",
     "url": "git@github.com:RafaelKa/node-serialport-enocean-parser.git"
   },
-  "keywords": ["ESP3", "EnOcean", "node-serialport", "TCM310"],
+  "keywords": [
+    "ESP3",
+    "EnOcean",
+    "node-serialport",
+    "TCM310"
+  ],
   "author": "Rafael Kähm <rafael@kaehms.de> (http://www.kaehms.de/)",
   "license": "WTFPL",
   "bugs": {
