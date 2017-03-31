@@ -1,27 +1,29 @@
 {
-	"name": "serialport-enocean-parser",
-	"version": "0.1.0",
-	"description": "ESP3 parser for nodes serialport. Fetches EnOcean Serial Protocol 3 (ESP3) packets from node-serialport.",
-
-	"main": "ESP3Parser.js",
-	"repository": {
-		"type": "git",
-		"url": "git@github.com:RafaelKa/node-serialport-enocean-parser.git"
-	},
-	"keywords": ["ESP3", "EnOcean", "node-serialport", "TCM310"],
-	"author": "Rafael Kähm <rafael@kaehms.de> (http://www.kaehms.de/)",
-	"license": "WTFPL",
-	"bugs": {
-		"url": "https://github.com/RafaelKa/node-serialport-enocean-parser/issues"
-	},
-	"homepage": "https://github.com/RafaelKa/node-serialport-enocean-parser",
-	"devDependencies": {
-		"serialport": "*",
-		"chai": "^3.3.0",
-		"sinon": "^1.17.3",
-		"mocha": "^3.0.0"
-	},
-	"scripts": {
-		"test": "mocha --recursive test"
-	}
+  "name": "serialport-enocean-parser",
+  "version": "0.1.0",
+  "description": "ESP3 parser for nodes serialport. Fetches EnOcean Serial Protocol 3 (ESP3) packets from node-serialport.",
+  "main": "ESP3Parser.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:RafaelKa/node-serialport-enocean-parser.git"
+  },
+  "keywords": ["ESP3", "EnOcean", "node-serialport", "TCM310"],
+  "author": "Rafael Kähm <rafael@kaehms.de> (http://www.kaehms.de/)",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/RafaelKa/node-serialport-enocean-parser/issues"
+  },
+  "homepage": "https://github.com/RafaelKa/node-serialport-enocean-parser",
+  "devDependencies": {
+    "serialport": "*",
+    "chai": "^3.3.0",
+    "sinon": "^1.17.3",
+    "mocha": "^3.0.0"
+  },
+  "engines": {
+    "node": ">= 4.0.0"
+  },
+  "scripts": {
+    "test": "mocha --recursive test"
+  }
 }
