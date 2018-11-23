@@ -20,10 +20,10 @@
   },
   "homepage": "https://github.com/RafaelKa/node-serialport-enocean-parser",
   "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.5.3",
     "serialport": "*",
-    "chai": "^3.3.0",
-    "sinon": "^1.17.3",
-    "mocha": "^3.0.0"
+    "sinon": "^1.17.7"
   },
   "engines": {
     "node": ">= 4.0.0"

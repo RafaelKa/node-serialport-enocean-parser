@@ -52,18 +52,18 @@ function ESP3Packet() {
 	this.optionalData = undefined;
 	this.crc8Data = undefined;
 	this.getRawBuffer = function () {
-		var dataLengthBuffer = new Buffer(2);
+		var dataLengthBuffer = Buffer.alloc(2);
 		dataLengthBuffer.writeInt16BE(this.header.dataLength)
 		return Buffer.concat(
 			[
-				new Buffer([this.syncByte]),
+				Buffer.from([this.syncByte]),
 				dataLengthBuffer,
-				new Buffer([this.header.optionalLength]),
-				new Buffer([this.header.packetType]),
-				new Buffer([this.crc8Header]),
+				Buffer.from([this.header.optionalLength]),
+				Buffer.from([this.header.packetType]),
+				Buffer.from([this.crc8Header]),
 				this.data,
 				this.optionalData,
-				new Buffer([this.crc8Data])
+				Buffer.from([this.crc8Data])
 			],
 			7 + this.header.dataLength + this.header.optionalLength
 		);
