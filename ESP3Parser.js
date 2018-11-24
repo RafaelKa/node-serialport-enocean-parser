@@ -103,7 +103,7 @@ class EnoceanParser extends Transform {
 		this.emitFetchedESP3Packet();
 	}
 	emitFetchedESP3Packet() {
-		var out = this.currentESP3Packet.getRawBuffer();
+		var out = this.currentESP3Packet;
 		this.currentESP3Packet = new ESP3Packet();
 		this.push(out)
 	}
