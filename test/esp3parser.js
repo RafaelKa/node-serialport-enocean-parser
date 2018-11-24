@@ -1,9 +1,10 @@
 'use strict';
 
-var assert = require('chai').assert;
-var sinon = require('sinon');
+const assert = require('chai').assert;
+const sinon = require('sinon');
 
-var esp3parser = require('../ESP3Parser');
+const Esp3Parser = require('../ESP3Parser');
+var esp3parser = new Esp3Parser();
 
 var telegrams = {
     _4BS_A5: '55000a0701eba5c87f710fffdba5e40001ffffffff47000d',
@@ -18,10 +19,12 @@ describe('serialport enocean parser', function(){
     describe('ESP3Packet.getRawBuffer()', function() {
         it('returns identical buffer', function() {
             for (var key in telegrams) {
-                var telegramm = new Buffer(telegrams[key], 'hex');
-                var spy = sinon.spy();
-                esp3parser({ emit: spy }, telegramm);
-                assert.equal(spy.getCall(0).args[1].getRawBuffer().toString('hex'), telegramm.toString('hex'));
+              const telegramm = Buffer.from(telegrams[key], 'hex');
+              const spy = sinon.spy();
+              const parser = new Esp3Parser();
+              parser.on('data', spy);
+              parser.write(telegramm);
+              assert.equal(spy.getCall(0).args[0].getRawBuffer().toString('hex'), telegramm.toString('hex'));
             }
         });
     });

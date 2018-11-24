@@ -2,160 +2,108 @@
 "use strict";
 
 // Copyright 2015 Rafael Kähm <rafael@kaehms.de>
+// Copyright 2018 Holger Will <h.will@klimapartner.de>
 
-
-var ESP3Packet = require('./ESP3Packet');
-var esp3 = new ESP3();
+const Transform = require('stream').Transform
+const ESP3Packet = require('./ESP3Packet');
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
 // More: https://www.enocean.com/fr/knowledge-base-doku/enoceansystemspecification:issue:faqesp2esp3/?purge=1
-module.exports = function (emitter, buffer) {
-	esp3.tryToFillPackets(emitter, buffer);
-};
 
-function ESP3() {
-	var currentESP3Packet;
-	var emitter;
-
-	var tmp = {
-	};
-
-	var callbackForNextByte = waitForSyncByte;
-
-	this.tryToFillPackets = function(emitterU, buffer) {
-		emitter = emitterU;
-		for (var offset = 0; offset < buffer.length; offset++) {
-			callbackForNextByte(buffer[offset]);
+class ESP3Parser extends Transform {
+	constructor(options = {}) {
+		super({...options, ...{readableObjectMode: true}});
+		this.currentESP3Packet=new ESP3Packet()
+		this.tmp=null
+		this.callbackForNextByte = this.waitForSyncByte;
+	}
+	_transform(chunk, encoding, cb) {
+		for (var offset = 0; offset < chunk.length; offset++) {
+			this.callbackForNextByte(chunk[offset]);
 		}
-	};
-
-	/**
-	 * Waits for sync byte.
-	 *
-	 * @param byte
-	 */
-	function waitForSyncByte(byte) {
+		cb()
+	}
+	waitForSyncByte(byte) {
 		if (byte !== 0x55) {
 			return;
 		}
-		tmp = {
-			"header": new Buffer(4),
+		this.tmp = {
+			"header": Buffer.alloc(4),
 			"headerOffset": 0,
 			"dataOffset": 0,
 			"optionalDataOffset": 0
 		};
-		currentESP3Packet = new ESP3Packet();
-		callbackForNextByte = fillHeader;
+		this.currentESP3Packet = new ESP3Packet();
+		this.callbackForNextByte = this.fillHeader;
 	}
 
-	/**
-	 * Fills header
-	 *
-	 * @param byte
-	 */
-	function fillHeader(byte) {
-		if (tmp.headerOffset < 3) {
-			tmp.header.fill(byte, tmp.headerOffset);
-			tmp.headerOffset++;
+	fillHeader(byte) {
+		if (this.tmp.headerOffset < 3) {
+			this.tmp.header.fill(byte, this.tmp.headerOffset);
+			this.tmp.headerOffset++;
 			return;
 		}
-		tmp.header.fill(byte, tmp.headerOffset);
-		currentESP3Packet.header.dataLength = new Buffer([tmp.header[0], tmp.header[1]]).readUInt16BE(0);
-		currentESP3Packet.header.optionalLength = tmp.header[2];
-		currentESP3Packet.header.packetType = tmp.header[3];
-		callbackForNextByte = fetchCRC8ForHeaderAndCheck;
+		this.tmp.header.fill(byte, this.tmp.headerOffset);
+		this.currentESP3Packet.header.dataLength = Buffer.from([this.tmp.header[0], this.tmp.header[1]]).readUInt16BE(0);
+		this.currentESP3Packet.header.optionalLength = this.tmp.header[2];
+		this.currentESP3Packet.header.packetType = this.tmp.header[3];
+		this.callbackForNextByte = this.fetchCRC8ForHeaderAndCheck;
 	}
+	fetchCRC8ForHeaderAndCheck(byte) {
+			if (this.getCrc8(this.tmp.header) != byte) {
+				this.callbackForNextByte = this.waitForSyncByte;
+				// @todo : Log this fail
+				return;
+			}
+			this.currentESP3Packet.crc8Header = byte;
+			this.currentESP3Packet.data = Buffer.alloc(this.currentESP3Packet.header.dataLength);
+			// @todo: is 0 bytes buffer really needed? -> maybe "if (currentESP3Packet.header.optionalLength > 0)"?
+			this.currentESP3Packet.optionalData = Buffer.alloc(this.currentESP3Packet.header.optionalLength);
+			this.callbackForNextByte = this.fillData;
+		}
+	fillData(byte) {
+			if (this.tmp.dataOffset <  this.currentESP3Packet.header.dataLength -1) {
+				this.currentESP3Packet.data.fill(byte, this.tmp.dataOffset);
+				this.tmp.dataOffset++;
+				return;
+			}
+			this.currentESP3Packet.data.fill(byte, this.tmp.dataOffset);
 
-	/**
-	 * Checks CRC8 for header and starts from scratch if it fails.
-	 *
-	 * @param byte
-	 */
-	function fetchCRC8ForHeaderAndCheck(byte) {
-		if (getCrc8(tmp.header) != byte) {
-			callbackForNextByte = waitForSyncByte;
-			// @todo : Log this fail
+			if(this.currentESP3Packet.header.optionalLength > 0) {
+				this.callbackForNextByte = this.fillOptionalData;
+				return;
+	 		}
+			this.callbackForNextByte = this.fetchCRC8ForDataAndCheck;
+		}
+	fillOptionalData(byte) {
+		if (this.tmp.optionalDataOffset <  this.currentESP3Packet.header.optionalLength -1) {
+			this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset);
+			this.tmp.optionalDataOffset++;
 			return;
 		}
-		currentESP3Packet.crc8Header = byte;
-		currentESP3Packet.data = new Buffer(currentESP3Packet.header.dataLength);
-		// @todo: is 0 bytes buffer really needed? -> maybe "if (currentESP3Packet.header.optionalLength > 0)"?
-		currentESP3Packet.optionalData = new Buffer(currentESP3Packet.header.optionalLength);
-		callbackForNextByte = fillData;
+		this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset);
+		this.callbackForNextByte = this.fetchCRC8ForDataAndCheck;
 	}
-
-	/**
-	 * Fills data.
-	 *
-	 * @param byte
-	 */
-	function fillData(byte) {
-		if (tmp.dataOffset <  currentESP3Packet.header.dataLength -1) {
-			currentESP3Packet.data.fill(byte, tmp.dataOffset);
-			tmp.dataOffset++;
-			return;
-		}
-		currentESP3Packet.data.fill(byte, tmp.dataOffset);
-
-		if(currentESP3Packet.header.optionalLength > 0) {
-			callbackForNextByte = fillOptionalData;
-			return;
- 		}
-		callbackForNextByte = fetchCRC8ForDataAndCheck;
-	}
-
-	/**
-	 * Fills optional data.
-	 *
-	 * @param byte
-	 */
-	function fillOptionalData(byte) {
-		if (tmp.optionalDataOffset <  currentESP3Packet.header.optionalLength -1) {
-			currentESP3Packet.optionalData.fill(byte, tmp.optionalDataOffset);
-			tmp.optionalDataOffset++;
-			return;
-		}
-		currentESP3Packet.optionalData.fill(byte, tmp.optionalDataOffset);
-		callbackForNextByte = fetchCRC8ForDataAndCheck;
-	}
-
-	/**
-	 * Checks CRC8 for datas(Data + OptionalData) and emits ESP3 Packet or start from scratch if it fails.
-	 *
-	 * @param byte
-	 */
-	function fetchCRC8ForDataAndCheck(byte){
-		callbackForNextByte = waitForSyncByte;
+	fetchCRC8ForDataAndCheck(byte){
+		this.callbackForNextByte = this.waitForSyncByte;
 		var datas = Buffer.concat(
-			[currentESP3Packet.data, currentESP3Packet.optionalData],
-			(currentESP3Packet.header.dataLength + currentESP3Packet.header.optionalLength)
+			[this.currentESP3Packet.data, this.currentESP3Packet.optionalData],
+			(this.currentESP3Packet.header.dataLength + this.currentESP3Packet.header.optionalLength)
 		);
-		if (getCrc8(datas) != byte) {
+		if (this.getCrc8(datas) != byte) {
 			// todo : Log this fail
 			return;
 		}
-		currentESP3Packet.crc8Data = byte;
-		emitFetchedESP3Packet();
+		this.currentESP3Packet.crc8Data = byte;
+		this.emitFetchedESP3Packet();
 	}
-
-	/**
-	 * Emits fetched ESP3 packet on data event.
-	 *
-	 */
-	function emitFetchedESP3Packet() {
-		var out = currentESP3Packet;
-		currentESP3Packet = new ESP3Packet();
-		emitter.emit("data", out);
+	emitFetchedESP3Packet() {
+		var out = this.currentESP3Packet;
+		this.currentESP3Packet = new ESP3Packet();
+		this.push(out)
 	}
-
-	/**
-	 * Returns CRC8 value from given buffer.
-	 *
-	 * @param buffer
-	 * @returns byte expected crc8 value
-	 */
-	function getCrc8(buffer) {
+	getCrc8(buffer) {
 		var u8CRC8Table = [
 			0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15, 0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d,
 			0x70, 0x77, 0x7e, 0x79, 0x6c, 0x6b, 0x62, 0x65, 0x48, 0x4f, 0x46, 0x41, 0x54, 0x53, 0x5a, 0x5d,
@@ -180,4 +128,11 @@ function ESP3() {
 		}
 		return crc8;
 	}
-};
+
+	_flush(cb) {
+		this.push(this.currentESP3Packet)
+		this.currentESP3Packet = new ESP3Packet();
+		cb()
+	}
+}
+module.exports = ESP3Parser
