@@ -4,7 +4,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 
 const Esp3parser = require('../ESP3Parser');
-var esp3parser = new Esp3parser;
+var esp3parser = new Esp3parser();
 
 var telegrams = {
     _4BS_A5: '55000a0701eba5c87f710fffdba5e40001ffffffff47000d',
