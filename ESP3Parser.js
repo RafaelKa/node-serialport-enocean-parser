@@ -7,27 +7,23 @@
 const Transform = require('stream').Transform
 const ESP3Packet = require('./ESP3Packet');
 
-
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
 // More: https://www.enocean.com/fr/knowledge-base-doku/enoceansystemspecification:issue:faqesp2esp3/?purge=1
-class EnoceanParser extends Transform {
+
+class ESP3Parser extends Transform {
 	constructor(options = {}) {
-		super(Object.assign(options, {readableObjectMode: true}));
-		this.buffer = Buffer.alloc(0)
+		super({...options, ...{readableObjectMode: true}});
 		this.currentESP3Packet=new ESP3Packet()
 		this.tmp=null
 		this.callbackForNextByte = this.waitForSyncByte;
 	}
 	_transform(chunk, encoding, cb) {
-		this.tryToFillPackets(chunk)
-		cb()
-	}
-	tryToFillPackets(chunk) {
 		for (var offset = 0; offset < chunk.length; offset++) {
 			this.callbackForNextByte(chunk[offset]);
 		}
-	};
+		cb()
+	}
 	waitForSyncByte(byte) {
 		if (byte !== 0x55) {
 			return;
@@ -63,7 +59,7 @@ class EnoceanParser extends Transform {
 			this.currentESP3Packet.crc8Header = byte;
 			this.currentESP3Packet.data = Buffer.alloc(this.currentESP3Packet.header.dataLength);
 			// @todo: is 0 bytes buffer really needed? -> maybe "if (currentESP3Packet.header.optionalLength > 0)"?
-			this.currentESP3Packet.optionalData =Buffer.alloc(this.currentESP3Packet.header.optionalLength);
+			this.currentESP3Packet.optionalData = Buffer.alloc(this.currentESP3Packet.header.optionalLength);
 			this.callbackForNextByte = this.fillData;
 		}
 	fillData(byte) {
@@ -80,16 +76,16 @@ class EnoceanParser extends Transform {
 	 		}
 			this.callbackForNextByte = this.fetchCRC8ForDataAndCheck;
 		}
-		fillOptionalData(byte) {
-			if (this.tmp.optionalDataOffset <  this.currentESP3Packet.header.optionalLength -1) {
-				this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset);
-				this.tmp.optionalDataOffset++;
-				return;
-			}
+	fillOptionalData(byte) {
+		if (this.tmp.optionalDataOffset <  this.currentESP3Packet.header.optionalLength -1) {
 			this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset);
-			this.callbackForNextByte = this.fetchCRC8ForDataAndCheck;
+			this.tmp.optionalDataOffset++;
+			return;
 		}
-		fetchCRC8ForDataAndCheck(byte){
+		this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset);
+		this.callbackForNextByte = this.fetchCRC8ForDataAndCheck;
+	}
+	fetchCRC8ForDataAndCheck(byte){
 		this.callbackForNextByte = this.waitForSyncByte;
 		var datas = Buffer.concat(
 			[this.currentESP3Packet.data, this.currentESP3Packet.optionalData],
@@ -107,7 +103,7 @@ class EnoceanParser extends Transform {
 		this.currentESP3Packet = new ESP3Packet();
 		this.push(out)
 	}
-		getCrc8(buffer) {
+	getCrc8(buffer) {
 		var u8CRC8Table = [
 			0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15, 0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d,
 			0x70, 0x77, 0x7e, 0x79, 0x6c, 0x6b, 0x62, 0x65, 0x48, 0x4f, 0x46, 0x41, 0x54, 0x53, 0x5a, 0x5d,
@@ -135,8 +131,8 @@ class EnoceanParser extends Transform {
 
 	_flush(cb) {
 		this.push(this.currentESP3Packet)
-		this.currentESP3Packet =
+		this.currentESP3Packet = new ESP3Packet();
 		cb()
 	}
 }
-module.exports = EnoceanParser
+module.exports = ESP3Parser
