@@ -13,7 +13,7 @@ const ESP3Packet = require('./ESP3Packet');
 // More: https://www.enocean.com/fr/knowledge-base-doku/enoceansystemspecification:issue:faqesp2esp3/?purge=1
 class EnoceanParser extends Transform {
 	constructor(options = {}) {
-		super(options)
+		super(Object.assign(options, {readableObjectMode: true}));
 		this.buffer = Buffer.alloc(0)
 		this.currentESP3Packet=new ESP3Packet()
 		this.tmp=null
