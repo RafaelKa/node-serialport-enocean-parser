@@ -5,7 +5,9 @@
 // Copyright 2018 Holger Will <h.will@klimapartner.de>
 
 const Transform = require('stream').Transform
-const ESP3Packet = require('./ESP3Packet');
+const Packets = require('./ESP3Packet')
+const ESP3Packet = Packets.ESP3Packet;
+const Radio_ERP1 = Packets.Radio_ERP1;
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
@@ -99,7 +101,7 @@ class ESP3Parser extends Transform {
 		this.emitFetchedESP3Packet();
 	}
 	emitFetchedESP3Packet() {
-		if(this.currentESP3Packet.header.packetType == 1) this.currentESP3Packet.senderId = this.currentESP3Packet.data.slice(this.currentESP3Packet.data.length-5,this.currentESP3Packet.data.length-1).toString("hex")
+		if(this.currentESP3Packet.header.packetType == 1) this.currentESP3Packet = new Radio_ERP1(this.currentESP3Packet)
 		var out = this.currentESP3Packet;
 		this.currentESP3Packet = new ESP3Packet();
 		this.push(out)

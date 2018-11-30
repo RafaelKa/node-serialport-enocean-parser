@@ -19,26 +19,20 @@ tcm310.on('data', function(esp3Packet) {
 
 function ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet) {
 
-	var telegram = {
-		"RORG": esp3Packet.data[0],
-		"data": esp3Packet.data[1],
-		"senderID": Buffer.from([esp3Packet.data[2], esp3Packet.data[3], esp3Packet.data[4], esp3Packet.data[5]]),
-		"status": esp3Packet.data[6]
-	};
 
-	if (telegram.RORG !== 0xF6) {
-		return "I don't understand " + telegram.RORG.toString(16) + " this telegram, i can show only Rocker Switch telegrams!";
+	if (esp3Packet.RORG !== 0xF6) {
+		return "I don't understand " + esp3Packet.RORG.toString(16) + " this telegram, i can show only Rocker Switch telegrams!";
 	}
 
 	// see RPS Telegram in "EnOcean Equipment Profiles (EEP)"
-	var rockersFirstAction = (telegram.data >>> 5);          // 11100000 >> 5              | Shortcut : R1
-	var energyBow = ((telegram.data >> 4) & 1) ;             // 00010000                   | Shortcut : EB  -> 0 = released or 1 = pressed
-	var rockersSecondAction = ((telegram.data >> 1) & 0x07); // (00001110 >> 1) & 00000111 | Shortcut : R2
-	var secondActionIsPresent = ((telegram.data) & 1);       // 00000001                   | Shortcut : EB
+	var rockersFirstAction = (esp3Packet.data >>> 5);          // 11100000 >> 5              | Shortcut : R1
+	var energyBow = ((esp3Packet.data >> 4) & 1) ;             // 00010000                   | Shortcut : EB  -> 0 = released or 1 = pressed
+	var rockersSecondAction = ((esp3Packet.data >> 1) & 0x07); // (00001110 >> 1) & 00000111 | Shortcut : R2
+	var secondActionIsPresent = ((esp3Packet.data) & 1);       // 00000001                   | Shortcut : EB
 
 	// see Statusfield for RPS in "EnOcean Equipment Profiles (EEP)"
-	var T21 = (telegram.status & 0x20) == 0x20;              // 00100000                   | 0 = PTM1xx or 1 = PTM2xx
-	var NU = (telegram.status & 0x10) == 0x10;               // 00010000                   | 0 = unassigned or 1 = normal
+	var T21 = (esp3Packet.status & 0x20) == 0x20;              // 00100000                   | 0 = PTM1xx or 1 = PTM2xx
+	var NU = (esp3Packet.status & 0x10) == 0x10;               // 00010000                   | 0 = unassigned or 1 = normal
 
 	var buttonName = {
 		0: "AI",
@@ -68,7 +62,7 @@ function ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet) {
 	}
 
 	var output = "{" + "\n" +
-		"  Sender ID:  " + telegram.senderID.toString("hex") + "\n" +
+		"  Sender ID:  " + esp3Packet.senderID + "\n" +
 		"  energy bow: " + energyBowDescription[energyBow] + "\n" +
 		"  button[s]:  " + pushedButtons + "\n" +
 		"}\n"

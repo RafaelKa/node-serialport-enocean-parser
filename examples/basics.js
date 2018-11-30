@@ -16,7 +16,7 @@ tcm310.on('data', function(esp3Packet) {
 
 function ESP3PacketRawAsString(data) {
 	return Buffer.from([data.syncByte]).toString("hex") +
-			(Buffer.from([data.header.dataLength]).toString("hex").length == 2 ? "00": "") + new Buffer([data.header.dataLength]).toString("hex") +
+			Buffer.from([data.header.dataLength]).toString("hex").padStart(4,"0") +
 			Buffer.from([data.header.optionalLength]).toString("hex") +
 			Buffer.from([data.header.packetType]).toString("hex") +
 			Buffer.from([data.crc8Header]).toString("hex") +
@@ -29,7 +29,7 @@ function ESP3PacketStructure(esp3Packet) {
 	return "{\n" +
 		"	syncByte:		 0x55,\n" +
 		"	header: {\n" +
-		"		dataLength:		 0x" + (Buffer.from([esp3Packet.header.dataLength]).toString("hex").length == 2 ? "00": "") + new Buffer([esp3Packet.header.dataLength]).toString("hex") + ", // decimal " + esp3Packet.header.dataLength + "\n" +
+		"		dataLength:		 0x" + (Buffer.from([esp3Packet.header.dataLength]).toString("hex").length == 2 ? "00": "") + Buffer.from([esp3Packet.header.dataLength]).toString("hex") + ", // decimal " + esp3Packet.header.dataLength + "\n" +
 		"		optionalLength: 0x" + Buffer.from([esp3Packet.header.optionalLength]).toString("hex")+ ", // decimal " + esp3Packet.header.optionalLength + "\n" +
 		"		packetType:		 0x" + Buffer.from([esp3Packet.header.packetType]).toString("hex") + "\n" +
 		"	},\n" +
@@ -88,14 +88,7 @@ return '' +
 };
 
 
-function ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet) {
-
-	var telegram = {
-		"RORG": esp3Packet.data[0],
-		"data": esp3Packet.data[1],
-		"senderID": Buffer.from([esp3Packet.data[2], esp3Packet.data[3], esp3Packet.data[4], esp3Packet.data[5]]),
-		"status": esp3Packet.data[6]
-	};
+function ESP3PacketFromRockerSwitch_PTMXXX(telegram) {
 
 	if (telegram.RORG !== 0xF6) {
 		return "I don't understand \"0x" + telegram.RORG.toString(16) + "\", i can show only Rocker Switch \"0xf6\" telegrams!";

@@ -71,4 +71,28 @@ class ESP3Packet {
 	}
 };
 
-module.exports = ESP3Packet;
+class Radio_ERP1 extends ESP3Packet{
+	constructor(esp3Packet){
+		super()
+		this.syncByte = 0x55;
+		this.header = esp3Packet.header,
+		this.crc8Header = esp3Packet.crc8Header;
+		this.data = esp3Packet.data;
+		this.optionalData = esp3Packet.optionalData;
+		this.crc8Data = esp3Packet.crc8Data;
+		this.RORG = this.data[0]
+		this.senderId = this.data.slice(this.data.length-5,this.data.length-1).toString("hex")
+		this.status = this.data[this.data.length-1]
+		if(this.optionalData.length>0){
+			this.subTelNum = this.optionalData[0]
+			this.destinationID = this.optionalData.slice(1,5).toString("hex")
+			this.dBm = this.optionalData[this.optionalData.length-2]
+			this.securityLevel = this.optionalData[this.optionalData.length-1]
+		}
+	}
+}
+
+module.exports = {
+	"ESP3Packet":ESP3Packet,
+	"Radio_ERP1":Radio_ERP1
+};
