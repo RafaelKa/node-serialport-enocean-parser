@@ -93,7 +93,7 @@ function ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet) {
 	var telegram = {
 		"RORG": esp3Packet.data[0],
 		"data": esp3Packet.data[1],
-		"senderID": new Buffer([esp3Packet.data[2], esp3Packet.data[3], esp3Packet.data[4], esp3Packet.data[5]]),
+		"senderID": Buffer.from([esp3Packet.data[2], esp3Packet.data[3], esp3Packet.data[4], esp3Packet.data[5]]),
 		"status": esp3Packet.data[6]
 	};
 

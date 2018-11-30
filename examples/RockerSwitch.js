@@ -1,6 +1,8 @@
-var serialport = require('serialport');
-var defaultParsers = require('serialport/parsers');
-var esp3parser = require('../ESP3Parser');
+const SerialPort = require('serialport')
+const EnoceanParser = require('../ESP3Parser');
+
+const port = new SerialPort('/dev/ttyUSB0',{ baudRate: 57600 })
+const parser = port.pipe(new EnoceanParser())
 
 /*
  To use EnOcean Pi module you must disable serial console on /dev/ttyAMA0,
@@ -10,46 +12,11 @@ var esp3parser = require('../ESP3Parser');
  add your user to dialout group or simple run "sudo chmod 777 /dev/ttyAMA0"
 
  */
-tcm310 = new serialport.SerialPort('/dev/ttyS2', {
-  baudrate: 57600,
-//  parser: serialport.parsers.raw
-  parser: esp3parser
-}, false);
-
-tcm310.open(function (error) {
-  if ( error ) {
-    console.log('failed to open: ' + error);
-  } else {
-    console.log('Connected to "TCM310".');
-
-    if (tcm310.options.parser.toString() === defaultParsers.raw.toString()) {
-      console.log(
-        "You are using raw parser from serialport.\n\n" +
-
-        "As you can see, serialport splits(from the second transmission) ESP3 Packets,\n" +
-        "because serialport fires data events as soon as it gets data.\n\n" +
-
-        "So you must use EnOcean parser to collect ESP3 packets together. \n" +
-        "To see how does it work, comment raw parser at line 14 and uncomment line 15. \n");
-
-      tcm310.on('data', function(rawData) {
-        console.log(rawData.toString("hex"));
-      });
-    } else {
-      console.log(
-        "You are using esp3 parser from serialport.\n" +
-        "As you can see, esp3 parser collects all bytes together to ESP3 packets.\n\n"
-      );
 
       tcm310.on('data', function(esp3Packet) {
-//        console.log(ESP3PacketRawAsString(esp3Packet) + " -> To see structure from ESP3Packet, comment line 44 and uncomment line 45.");
-//        console.log(ESP3PacketStructure(esp3Packet) + "\n-> To see description for ESP3Packet, comment line 45 and uncomment line 46.");
-//        console.log(ESP3PacketDescription(esp3Packet) + "-> if you have an EnOcean Rocker Switch(PTM200), comment line 46 and uncomment line 47 to see how to fetch events from.");
 	      console.log(ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet));
       });
-    }
-  }
-});
+
 
 
 function ESP3PacketRawAsString(data) {
