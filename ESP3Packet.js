@@ -106,11 +106,30 @@ class Response extends ESP3Packet{
 		const CodeNames = ["RET_OK OK", "RET_ERROR", "RET_NOT_SUPPORTED", "RET_WRONG_PARAM", "RET_OPERATION_DENIED", "RET_LOCK_SET", "RET_BUFFER_TO_SMALL", "RET_NO_FREE_BUFFER"]
 		this.returnCode = this.data[0]
 		this.codeName = CodeNames[this.returnCode]
+		this.responseData = this.data.slice(1,this.data.length)
+	}
+}
+
+class Event extends ESP3Packet{
+	constructor(esp3Packet){
+		super()
+		this.syncByte = 0x55;
+		this.header = esp3Packet.header,
+		this.crc8Header = esp3Packet.crc8Header;
+		this.data = esp3Packet.data;
+		this.optionalData = esp3Packet.optionalData;
+		this.crc8Data = esp3Packet.crc8Data;
+		this.packetTypeName = "RESPONSE"
+		const CodeNames = ["SA_RECLAIM_NOT_SUCCESSFUL","SA_CONFIRM_LEARN","SA_LEARN_ACK","CO_READY","CO_EVENT_SECUREDEVICES","CO_DUTYCYCLE_LIMITCO_TRANSMIT_FAILED"]
+		this.eventCode = this.data[0]
+		this.eventName = CodeNames[this.returnCode]
+		this.responseData = this.data.slice(1,this.data.length)
 	}
 }
 
 module.exports = {
 	"ESP3Packet" : ESP3Packet,
 	"Radio_ERP1" : Radio_ERP1,
-	"Response" : Response
+	"Response" : Response,
+	"Event" : Event
 };
