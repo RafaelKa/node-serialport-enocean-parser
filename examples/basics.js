@@ -29,7 +29,7 @@ function ESP3PacketStructure(esp3Packet) {
 	return "{\n" +
 		"	syncByte:		 0x55,\n" +
 		"	header: {\n" +
-		"		dataLength:		 0x" + (Buffer.from([esp3Packet.header.dataLength]).toString("hex").length == 2 ? "00": "") + Buffer.from([esp3Packet.header.dataLength]).toString("hex") + ", // decimal " + esp3Packet.header.dataLength + "\n" +
+		"		dataLength:		 0x" + Buffer.from([esp3Packet.header.dataLength].toString("hex").padStart(4,"0") + ", // decimal " + esp3Packet.header.dataLength + "\n" +
 		"		optionalLength: 0x" + Buffer.from([esp3Packet.header.optionalLength]).toString("hex")+ ", // decimal " + esp3Packet.header.optionalLength + "\n" +
 		"		packetType:		 0x" + Buffer.from([esp3Packet.header.packetType]).toString("hex") + "\n" +
 		"	},\n" +
