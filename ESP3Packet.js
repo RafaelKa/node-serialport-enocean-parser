@@ -106,7 +106,6 @@ class Response extends ESP3Packet{
 		const CodeNames = ["RET_OK OK", "RET_ERROR", "RET_NOT_SUPPORTED", "RET_WRONG_PARAM", "RET_OPERATION_DENIED", "RET_LOCK_SET", "RET_BUFFER_TO_SMALL", "RET_NO_FREE_BUFFER"]
 		this.returnCode = this.data[0]
 		this.codeName = CodeNames[this.returnCode]
-		this.responseData = this.data.slice(1,this.data.length)
 	}
 }
 
@@ -120,10 +119,25 @@ class Event extends ESP3Packet{
 		this.optionalData = esp3Packet.optionalData;
 		this.crc8Data = esp3Packet.crc8Data;
 		this.packetTypeName = "RESPONSE"
-		const CodeNames = ["SA_RECLAIM_NOT_SUCCESSFUL","SA_CONFIRM_LEARN","SA_LEARN_ACK","CO_READY","CO_EVENT_SECUREDEVICES","CO_DUTYCYCLE_LIMITCO_TRANSMIT_FAILED"]
+		const EventNames = ["SA_RECLAIM_NOT_SUCCESSFUL", "SA_CONFIRM_LEARN", "SA_LEARN_ACK", "CO_READY", "CO_EVENT_SECUREDEVICES", "CO_DUTYCYCLE_LIMITCO_TRANSMIT_FAILED"]
 		this.eventCode = this.data[0]
-		this.eventName = CodeNames[this.returnCode]
-		this.responseData = this.data.slice(1,this.data.length)
+		this.eventName = EventNames[this.returnCode]
+	}
+}
+
+class Common_Command extends ESP3Packet{
+	constructor(esp3Packet){
+		super()
+		this.syncByte = 0x55;
+		this.header = esp3Packet.header,
+		this.crc8Header = esp3Packet.crc8Header;
+		this.data = esp3Packet.data;
+		this.optionalData = esp3Packet.optionalData;
+		this.crc8Data = esp3Packet.crc8Data;
+		this.packetTypeName = "RESPONSE"
+		const CommandNames = ["CO_WR_SLEEP", "CO_WR_RESET", "CO_RD_VERSION", "CO_RD_SYS_LOG", "CO_WR_SYS_LOG", "CO_WR_BIST", "CO_WR_IDBASE", "CO_RD_IDBASE", "CO_WR_REPEATER", "CO_RD_REPEATER", "CO_WR_FILTER_ADD", "CO_WR_FILTER_DEL", "CO_WR_FILTER_DEL_ALL", "CO_WR_FILTER_ENABLE", "CO_RD_FILTER", "CO_WR_WAIT_MATURITY", "CO_WR_SUBTEL", "CO_WR_MEM", "CO_RD_MEM", "CO_RD_MEM_ADDRESS", "CO_RD_SECURITY", "CO_WR_SECURITY","CO_WR_LEARNMODE", "CO_RD_LEARNMODE", "CO_WR_SECUREDEVICE_ADD", "CO_WR_SECUREDEVICE_DEL", "CO_RD_SECUREDEVICE_BY_INDEX", "CO_WR_MODE", "CO_RD_NUMSECUREDEVICES", "CO_RD_SECUREDEVICE_BY_ID", "CO_WR_SECUREDEVICE_ADD_PSK", "CO_WR_SECUREDEVICE_SENDTEACHIN", "CO_WR_TEMPORARY_RLC_WINDOW", "CO_RD_SECUREDEVICE_PSK", "CO_RD_DUTYCYCLE_LIMIT", "CO_SET_BAUDRATE", "CO_GET_FREQUENCY_INFO", "Reserved", "CO_GET_STEPCODE", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "CO_WR_REMAN_CODE", "CO_WR_STARTUP_DELAY", "CO_WR_REMAN_REPEATING", "CO_RD_REMAN_REPEATING", "CO_SET_NOISETHRESHOLD", "CO_GET_NOISETHRESHOLD"]
+		this.commandCode = this.data[0]
+		this.eventName = CommandNames[this.returnCode]
 	}
 }
 
@@ -131,5 +145,8 @@ module.exports = {
 	"ESP3Packet" : ESP3Packet,
 	"Radio_ERP1" : Radio_ERP1,
 	"Response" : Response,
-	"Event" : Event
+	"Event" : Event,
+	"Common_Command" : Common_Command
 };
+
+["CO_WR_SLEEP","CO_WR_RESET","CO_RD_VERSION","CO_RD_SYS_LOG","CO_WR_SYS_LOG","CO_WR_BIST","CO_WR_IDBASE","CO_RD_IDBASE","CO_WR_REPEATER","CO_RD_REPEATER","CO_WR_FILTER_ADD","CO_WR_FILTER_DEL","CO_WR_FILTER_DEL_ALL","CO_WR_FILTER_ENABLE","CO_RD_FILTER","CO_WR_WAIT_MATURITY","CO_WR_SUBTEL","CO_WR_MEM","CO_RD_MEM","CO_RD_MEM_ADDRESS","CO_RD_SECURITY","CO_WR_SECURITY","CO_WR_LEARNMODE","CO_RD_LEARNMODE","CO_WR_SECUREDEVICE_ADD","CO_WR_SECUREDEVICE_DEL","CO_RD_SECUREDEVICE_BY_INDEX","CO_WR_MODE","CO_RD_NUMSECUREDEVICES","CO_RD_SECUREDEVICE_BY_ID","CO_WR_SECUREDEVICE_ADD_PSK","CO_WR_SECUREDEVICE_SENDTEACHIN","CO_WR_TEMPORARY_RLC_WINDOW","CO_RD_SECUREDEVICE_PSK","CO_RD_DUTYCYCLE_LIMIT","CO_SET_BAUDRATE","CO_GET_FREQUENCY_INFO","Reserved","CO_GET_STEPCODE","Reserved","Reserved","Reserved","Reserved","Reserved","Reserved","CO_WR_REMAN_CODE","CO_WR_STARTUP_DELAY","CO_WR_REMAN_REPEATING","CO_RD_REMAN_REPEATING","CO_SET_NOISETHRESHOLD","CO_GET_NOISETHRESHOLD"]
