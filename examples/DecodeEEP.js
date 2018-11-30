@@ -1,10 +1,11 @@
 const SerialPort = require('serialport')
 const EnoceanParser = require('../ESP3Parser');
+const transcoder = require("eep-transcoder")
 
 const port = new SerialPort('/dev/ttyUSB0',{ baudRate: 57600 })
 const tcm310 = port.pipe(new EnoceanParser())
 
-const transcoder = require("eep-transcoder")
+
 
 tcm310.on('data', function(esp3Packet) {
   ESP3PacketFrom4BSSensor(esp3Packet)

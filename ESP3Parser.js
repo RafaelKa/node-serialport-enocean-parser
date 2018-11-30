@@ -99,6 +99,7 @@ class ESP3Parser extends Transform {
 		this.emitFetchedESP3Packet();
 	}
 	emitFetchedESP3Packet() {
+		if(this.currentESP3Packet.header.packetType == 1) this.currentESP3Packet.senderId = this.currentESP3Packet.data.slice(this.currentESP3Packet.data.length-5,this.currentESP3Packet.data.length-1).toString("hex")
 		var out = this.currentESP3Packet;
 		this.currentESP3Packet = new ESP3Packet();
 		this.push(out)

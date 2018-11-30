@@ -38,20 +38,21 @@
  *
  * also full ESP3 Packet Length = 7 + X(Data length) + Y(Optional Data length)
  */
-module.exports = ESP3Packet;
 
-function ESP3Packet() {
-	this.syncByte = 0x55;
-	this.header = {
-		dataLength: undefined,
-		optionalLength: undefined,
-		packetType: undefined
-	},
-	this.crc8Header = undefined;
-	this.data = undefined;
-	this.optionalData = undefined;
-	this.crc8Data = undefined;
-	this.getRawBuffer = function () {
+class ESP3Packet {
+	constructor(){
+		this.syncByte = 0x55;
+		this.header = {
+			dataLength: undefined,
+			optionalLength: undefined,
+			packetType: undefined
+		},
+		this.crc8Header = undefined;
+		this.data = undefined;
+		this.optionalData = undefined;
+		this.crc8Data = undefined;
+	}
+	getRawBuffer() {
 		var dataLengthBuffer = Buffer.alloc(2);
 		dataLengthBuffer.writeInt16BE(this.header.dataLength)
 		return Buffer.concat(
@@ -69,3 +70,5 @@ function ESP3Packet() {
 		);
 	}
 };
+
+module.exports = ESP3Packet;
