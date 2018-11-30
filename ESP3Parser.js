@@ -8,6 +8,7 @@ const Transform = require('stream').Transform
 const Packets = require('./ESP3Packet')
 const ESP3Packet = Packets.ESP3Packet;
 const Radio_ERP1 = Packets.Radio_ERP1;
+const Response = Packets.Response;
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
@@ -101,10 +102,18 @@ class ESP3Parser extends Transform {
 		this.emitFetchedESP3Packet();
 	}
 	emitFetchedESP3Packet() {
-		if(this.currentESP3Packet.header.packetType == 1) this.currentESP3Packet = new Radio_ERP1(this.currentESP3Packet)
+		switch(this.currentESP3Packet.header.packetType){
+			case 1:
+				this.currentESP3Packet = new Radio_ERP1(this.currentESP3Packet);
+			break;
+			case 2:
+				this.currentESP3Packet = new Response(this.currentESP3Packet);
+			break;
+		}
+
 		var out = this.currentESP3Packet;
 		this.currentESP3Packet = new ESP3Packet();
-		this.push(out)
+		this.push(out);
 	}
 	getCrc8(buffer) {
 		var u8CRC8Table = [

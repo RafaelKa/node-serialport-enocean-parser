@@ -92,7 +92,23 @@ class Radio_ERP1 extends ESP3Packet{
 	}
 }
 
+class Response extends ESP3Packet{
+	constructor(esp3Packet){
+		super()
+		this.syncByte = 0x55;
+		this.header = esp3Packet.header,
+		this.crc8Header = esp3Packet.crc8Header;
+		this.data = esp3Packet.data;
+		this.optionalData = esp3Packet.optionalData;
+		this.crc8Data = esp3Packet.crc8Data;
+		const CodeNames = ["RET_OK OK", "RET_ERROR", "RET_NOT_SUPPORTED", "RET_WRONG_PARAM", "RET_OPERATION_DENIED", "RET_LOCK_SET", "RET_BUFFER_TO_SMALL", "RET_NO_FREE_BUFFER"]
+		this.returnCode = this.data[0]
+		this.codeName = CodeNames[this.returnCode]
+	}
+}
+
 module.exports = {
-	"ESP3Packet":ESP3Packet,
-	"Radio_ERP1":Radio_ERP1
+	"ESP3Packet" : ESP3Packet,
+	"Radio_ERP1" : Radio_ERP1,
+	"Response" : Response
 };
