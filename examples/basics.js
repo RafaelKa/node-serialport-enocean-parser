@@ -1,88 +1,53 @@
-var serialport = require('serialport');
-var defaultParsers = require('serialport/parsers');
-var esp3parser = require('../ESP3Parser');
+const SerialPort = require('serialport')
+const EnoceanParser = require('../ESP3Parser');
+const serialport = new SerialPort('/dev/ttyUSB0',{ baudRate: 57600 })
 
-tcm310 = new serialport.SerialPort('/dev/ttyS2', {
-	baudrate: 57600,
-	parser: serialport.parsers.raw
-//	parser: esp3parser
-}, false);
+const tcm310 = serialport.pipe(new EnoceanParser())
 
-tcm310.open(function (error) {
-	if ( error ) {
-		console.log('failed to open: ' + error);
-	} else {
-		console.log('Connected to "TCM310".');
 
-		if (tcm310.options.parser.toString() === defaultParsers.raw.toString()) {
-			console.log(
-				"\033[1;31m" +
-				"You are using raw parser from serialport." + "\n\n" +
-				"\033[0;31m" +
-				"As you can see, serialport splits ESP3 Packets,\n" +
-				"because it fires data events as soon as it gets data.\n\n" +
-
-				"So you must use EnOcean parser to collect ESP3 packets together. \n" +
-				"To enable ESP3 parser comment line 7 and uncomment line 8. \n" +
-				"\033[0m");
-
-			tcm310.on('data', function(rawData) {
-				console.log(rawData.toString("hex"));
-			});
-		} else {
-			console.log(
-				"\033[1;32m" +
-				"You are using ESP3 parser.\n\n" +
-				"\033[0;32m" +
-				"As you can see, ESP3 parser collects all bytes together to ESP3 packets.\n\n" +
-				"\033[0m"
-			);
-
-			tcm310.on('data', function(esp3Packet) {
-				console.log(ESP3PacketRawAsString(esp3Packet) + " -> To see structure from ESP3Packet, comment line 42 and uncomment line 43.");
-//				console.log(ESP3PacketStructure(esp3Packet) + "\n-> To see description for ESP3Packet, comment line 43 and uncomment line 44.");
-//				console.log(ESP3PacketDescription(esp3Packet) + "-> if you have an EnOcean Rocker Switch(PTM200), comment line 44 and uncomment line 45 to see how to fetch events from.");
-//				console.log(ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet));
-			});
-		}
-	}
+tcm310.on('data', function(esp3Packet) {
+	console.log(ESP3PacketRawAsString(esp3Packet) + " -> To see structure from ESP3Packet, comment this line and uncomment next line.");
+//	console.log(ESP3PacketStructure(esp3Packet) + "\n-> To see description for ESP3Packet, comment this line and uncomment next line.");
+//	console.log(ESP3PacketDescription(esp3Packet) + "-> if you have an EnOcean Rocker Switch(PTM200), , comment this line and uncomment next line to see how to fetch events from.");
+//	console.log(ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet));
 });
 
 
+
 function ESP3PacketRawAsString(data) {
-	return new Buffer([data.syncByte]).toString("hex") +
-			(new Buffer([data.header.dataLength]).toString("hex").length == 2 ? "00": "") + new Buffer([data.header.dataLength]).toString("hex") +
-			new Buffer([data.header.optionalLength]).toString("hex") +
-			new Buffer([data.header.packetType]).toString("hex") +
-			new Buffer([data.crc8Header]).toString("hex") +
+	return Buffer.from([data.syncByte]).toString("hex") +
+			(Buffer.from([data.header.dataLength]).toString("hex").length == 2 ? "00": "") + new Buffer([data.header.dataLength]).toString("hex") +
+			Buffer.from([data.header.optionalLength]).toString("hex") +
+			Buffer.from([data.header.packetType]).toString("hex") +
+			Buffer.from([data.crc8Header]).toString("hex") +
 			data.data.toString("hex") +
 			data.optionalData.toString("hex") +
-			new Buffer([data.crc8Data]).toString("hex");
+			Buffer.from([data.crc8Data]).toString("hex");
 };
 
 function ESP3PacketStructure(esp3Packet) {
 	return "{\n" +
 		"	syncByte:		 0x55,\n" +
 		"	header: {\n" +
-		"		dataLength:		 0x" + (new Buffer([esp3Packet.header.dataLength]).toString("hex").length == 2 ? "00": "") + new Buffer([esp3Packet.header.dataLength]).toString("hex") + ", // decimal " + esp3Packet.header.dataLength + "\n" +
-		"		optionalLength: 0x" + new Buffer([esp3Packet.header.optionalLength]).toString("hex")+ ", // decimal " + esp3Packet.header.optionalLength + "\n" +
-		"		packetType:		 0x" + new Buffer([esp3Packet.header.packetType]).toString("hex") + "\n" +
+		"		dataLength:		 0x" + (Buffer.from([esp3Packet.header.dataLength]).toString("hex").length == 2 ? "00": "") + new Buffer([esp3Packet.header.dataLength]).toString("hex") + ", // decimal " + esp3Packet.header.dataLength + "\n" +
+		"		optionalLength: 0x" + Buffer.from([esp3Packet.header.optionalLength]).toString("hex")+ ", // decimal " + esp3Packet.header.optionalLength + "\n" +
+		"		packetType:		 0x" + Buffer.from([esp3Packet.header.packetType]).toString("hex") + "\n" +
 		"	},\n" +
-		"	crc8Header:	 0x" + new Buffer([esp3Packet.crc8Header]).toString("hex") + ",\n" +
+		"	crc8Header:	 0x" + Buffer.from([esp3Packet.crc8Header]).toString("hex") + ",\n" +
 		"	data:				 0x" + esp3Packet.data.toString("hex") + ",\n" +
 		"	optionalData: 0x" + esp3Packet.optionalData.toString("hex") + ",\n" +
-		"	crc8Data:		 0x" + new Buffer([esp3Packet.crc8Data]).toString("hex") + "\n" +
+		"	crc8Data:		 0x" + Buffer.from([esp3Packet.crc8Data]).toString("hex") + "\n" +
 		"}";
 };
 
 function ESP3PacketDescription(esp3Packet) {
-	var dataLength     = 'Data Length: 0x00'   + new Buffer([esp3Packet.header.dataLength]).toString("hex");
-	var optionalLength = 'Optional Length: 0x' + new Buffer([esp3Packet.header.optionalLength]).toString("hex");
-	var packetType     = 'Packet Type: 0x'     + new Buffer([esp3Packet.header.packetType]).toString("hex");
-	var crc8Header     = 'CRC8 Header: 0x'     + new Buffer([esp3Packet.crc8Header]).toString("hex");
+	var dataLength     = 'Data Length: 0x00'   + Buffer.from([esp3Packet.header.dataLength]).toString("hex");
+	var optionalLength = 'Optional Length: 0x' + Buffer.from([esp3Packet.header.optionalLength]).toString("hex");
+	var packetType     = 'Packet Type: 0x'     + Buffer.from([esp3Packet.header.packetType]).toString("hex");
+	var crc8Header     = 'CRC8 Header: 0x'     + Buffer.from([esp3Packet.crc8Header]).toString("hex");
 	var data		   = 'Data: 0x'            + esp3Packet.data.toString("hex");
 	var optionalData   = 'Optional Data: 0x'   + esp3Packet.optionalData.toString("hex");
-	var crc8Datas      = 'CRC8 Data: 0x'       + new Buffer([esp3Packet.crc8Data]).toString("hex");
+	var crc8Datas      = 'CRC8 Data: 0x'       + Buffer.from([esp3Packet.crc8Data]).toString("hex");
 
 	var l              = 6 + esp3Packet.header.dataLength + esp3Packet.header.optionalLength + 1;
 
