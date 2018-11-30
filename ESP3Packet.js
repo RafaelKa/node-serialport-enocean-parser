@@ -80,6 +80,7 @@ class Radio_ERP1 extends ESP3Packet{
 		this.data = esp3Packet.data;
 		this.optionalData = esp3Packet.optionalData;
 		this.crc8Data = esp3Packet.crc8Data;
+		this.packetTypeName = "RADIO_ERP1"
 		this.RORG = this.data[0]
 		this.senderId = this.data.slice(this.data.length-5,this.data.length-1).toString("hex")
 		this.status = this.data[this.data.length-1]
@@ -101,6 +102,7 @@ class Response extends ESP3Packet{
 		this.data = esp3Packet.data;
 		this.optionalData = esp3Packet.optionalData;
 		this.crc8Data = esp3Packet.crc8Data;
+		this.packetTypeName = "RESPONSE"
 		const CodeNames = ["RET_OK OK", "RET_ERROR", "RET_NOT_SUPPORTED", "RET_WRONG_PARAM", "RET_OPERATION_DENIED", "RET_LOCK_SET", "RET_BUFFER_TO_SMALL", "RET_NO_FREE_BUFFER"]
 		this.returnCode = this.data[0]
 		this.codeName = CodeNames[this.returnCode]

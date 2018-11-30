@@ -110,7 +110,6 @@ class ESP3Parser extends Transform {
 				this.currentESP3Packet = new Response(this.currentESP3Packet);
 			break;
 		}
-
 		var out = this.currentESP3Packet;
 		this.currentESP3Packet = new ESP3Packet();
 		this.push(out);
