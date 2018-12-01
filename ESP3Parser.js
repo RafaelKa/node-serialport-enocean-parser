@@ -5,6 +5,7 @@
 // Copyright 2018 Holger Will <h.will@klimapartner.de>
 
 const Transform = require('stream').Transform
+const Packets = require('./ESP3Packet')
 const ESP3Packet = Packets.ESP3Packet;
 const Radio_ERP1 = Packets.Radio_ERP1;
 const Response = Packets.Response;
@@ -103,11 +104,6 @@ class ESP3Parser extends Transform {
 		this.emitFetchedESP3Packet();
 	}
 	emitFetchedESP3Packet() {
-<<<<<<< HEAD
-		var out = this.currentESP3Packet;
-		this.currentESP3Packet = new ESP3Packet();
-		this.push(out)
-=======
 		switch(this.currentESP3Packet.header.packetType){
 			case 1:
 				this.currentESP3Packet = new Radio_ERP1(this.currentESP3Packet);
@@ -125,7 +121,6 @@ class ESP3Parser extends Transform {
 		var out = this.currentESP3Packet;
 		this.currentESP3Packet = new ESP3Packet();
 		this.push(out);
->>>>>>> upstream/master
 	}
 	getCrc8(buffer) {
 		var u8CRC8Table = [
