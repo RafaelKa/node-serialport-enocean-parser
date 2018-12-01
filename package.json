@@ -14,19 +14,26 @@
     "TCM310"
   ],
   "author": "Rafael Kähm <rafael@kaehms.de> (http://www.kaehms.de/)",
+  "contributors": [
+    "Holger Will <h.will@klimapartner.de> (https://klimapartner.de)"
+  ],
   "license": "WTFPL",
   "bugs": {
     "url": "https://github.com/RafaelKa/node-serialport-enocean-parser/issues"
   },
   "homepage": "https://github.com/RafaelKa/node-serialport-enocean-parser",
   "devDependencies": {
-    "chai": "^3.5.0",
-    "mocha": "^3.5.3",
-    "serialport": "*",
+    "chai": "^4.2.0",
+    "eep-transcoder": "^0.1.0",
+    "mocha": "^5.2.0",
+    "serialport": "^7.1.0",
     "sinon": "^1.17.7"
   },
+  "peerDependencies": {
+    "serialport": "^7.1.0"
+  },
   "engines": {
-    "node": ">= 4.0.0"
+    "node": ">= 8.4.0"
   },
   "scripts": {
     "test": "mocha --recursive test"
