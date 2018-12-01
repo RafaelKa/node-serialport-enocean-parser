@@ -12,8 +12,6 @@ tcm310.on('data', function(esp3Packet) {
 });
 
 function ESP3PacketFrom4BSSensor(esp3Packet) {
-  var packetString=esp3Packet.getRawBuffer().toString("hex")
-  var senderId=getSenderId(esp3Packet)
 
   var sensors={
     "ffd9b7e5":{
@@ -26,17 +24,15 @@ function ESP3PacketFrom4BSSensor(esp3Packet) {
     }
   }
 
-  if(sensors.hasOwnProperty(senderId)){
-    console.log(`Sensor ${senderId} is of type ${sensors[senderId].eep}. decoding data...`)
-    console.log(transcoder.decode(packetString,sensors[senderId].eep).decoded)
-    // Info on all fields conent and how to make sense of the data can be found at https://node-enocean.github.io/eep-spec/
+  if(sensors.hasOwnProperty(esp3Packet.senderId)){
+    var eep = sensors[esp3Packet.senderId].eep
+    var packetString=esp3Packet.getRawBuffer().toString("hex")
+    console.log(`Sensor ${esp3Packet.senderId} is of type ${eep}. decoding data...`)
+    console.log(transcoder.decode(packetString,eep).decoded)
+    // Info on all fields content and how to make sense of the data can be found at https://node-enocean.github.io/eep-spec/
   }else{
-    console.log(`no eep info found for ${senderId}`)
+    console.log(`no eep info found for ${esp3Packet.senderId}`)
     //console.log(transcoder.decode(packetString,"a5-10-06"))
   }
 
-}
-
-function getSenderId(esp3Packet){
- return esp3Packet.data.slice(esp3Packet.data.length-5,esp3Packet.data.length-1).toString("hex")
 }
