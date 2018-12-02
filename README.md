@@ -6,7 +6,7 @@
 
 ## Install
 
-`npm i -S node-serialport-enocean-parser`
+`npm i -S serialport-enocean-parser`
 
 ## How to use
 
