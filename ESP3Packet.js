@@ -162,5 +162,6 @@ module.exports = {
 	"Radio_ERP1" : Radio_ERP1,
 	"Response" : Response,
 	"Event" : Event,
-	"Common_Command" : Common_Command
+	"Common_Command" : Common_Command,
+  "Smart_Ack_Command" : Smart_Ack_Command
 };

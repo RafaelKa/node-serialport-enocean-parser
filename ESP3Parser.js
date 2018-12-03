@@ -11,6 +11,7 @@ const Radio_ERP1 = Packets.Radio_ERP1;
 const Response = Packets.Response;
 const Event = Packets.Event;
 const Common_Command = Packets.Common_Command;
+const Smart_Ack_Command = Packets.Smart_Ack_Command;
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
@@ -116,6 +117,9 @@ class ESP3Parser extends Transform {
 			break;
 			case 5:
 				this.currentESP3Packet = new Common_Command(this.currentESP3Packet);
+			break;
+      case 6:
+				this.currentESP3Packet = new Smart_Ack_Command(this.currentESP3Packet);
 			break;
 		}
 		var out = this.currentESP3Packet;
