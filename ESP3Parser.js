@@ -58,7 +58,7 @@ class ESP3Parser extends Transform {
   fetchCRC8ForHeaderAndCheck(byte) {
     if (this.getCrc8(this.tmp.header) != byte) {
       this.callbackForNextByte = this.waitForSyncByte
-      // @todo : Log this fail
+      this.emit("error",{code:3000,msg:"checksum calculation for packet header failed"})
       return
     }
     this.currentESP3Packet.crc8Header = byte
@@ -97,7 +97,7 @@ class ESP3Parser extends Transform {
       (this.currentESP3Packet.header.dataLength + this.currentESP3Packet.header.optionalLength)
     )
     if (this.getCrc8(datas) != byte) {
-      // todo : Log this fail
+      this.emit("error",{code:3001,msg:"checksum calculation for packet content failed"})
       return
     }
     this.currentESP3Packet.crc8Data = byte
@@ -117,6 +117,8 @@ class ESP3Parser extends Transform {
     case 5:
       this.currentESP3Packet = new Common_Command(this.currentESP3Packet)
       break
+    default:
+      this.emit("error",{code:1000,msg:"unknown packet type"})
     }
     var out = this.currentESP3Packet
     this.currentESP3Packet = new ESP3Packet()
