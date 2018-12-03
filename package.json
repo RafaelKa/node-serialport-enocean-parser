@@ -24,8 +24,11 @@
   "homepage": "https://github.com/RafaelKa/node-serialport-enocean-parser",
   "devDependencies": {
     "chai": "^4.2.0",
+    "coveralls": "^3.0.2",
     "eep-transcoder": "^0.1.0",
+    "eslint": "^5.9.0",
     "mocha": "^5.2.0",
+    "nyc": "^13.1.0",
     "serialport": "^7.1.0",
     "sinon": "^1.17.7"
   },
@@ -36,6 +39,9 @@
     "node": ">= 8.4.0"
   },
   "scripts": {
-    "test": "mocha --recursive test"
+    "test": "nyc --reporter=text mocha --recursive test",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "lint": "eslint \"./**/*.js\"",
+    "lint-autofix": "eslint --fix \"./**/*.js\""
   }
 }
