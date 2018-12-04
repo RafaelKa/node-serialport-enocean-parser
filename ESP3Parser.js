@@ -106,6 +106,9 @@ class ESP3Parser extends Transform {
       case 2:
         this.currentESP3Packet = new Packets.Response(this.currentESP3Packet)
         break
+      case 3:
+        this.currentESP3Packet = new Packets.RadioSubTel(this.currentESP3Packet)
+        break
       case 4:
         this.currentESP3Packet = new Packets.Event(this.currentESP3Packet)
         break

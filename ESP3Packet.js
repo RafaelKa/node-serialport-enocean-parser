@@ -48,8 +48,8 @@ class RadioERP1 extends ESP3Packet {
     this.status = this.data[this.data.length - 1]
     this.subTelNum = this.optionalData[0]
     this.destinationID = this.optionalData.slice(1, 5).toString('hex')
-    this.RSSI = this.optionalData[this.optionalData.length - 2]
-    this.securityLevel = this.optionalData[this.optionalData.length - 1]
+    this.RSSI = this.optionalData[5]
+    this.securityLevel = this.optionalData[6]
   }
 }
 
@@ -75,6 +75,38 @@ class Response extends ESP3Packet {
       { number: 7, name: 'RET_NO_FREE_BUFFER' }
     ]
     this.responseType = responseTypes[this.data[0]]
+  }
+}
+
+class RadioSubTel extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'RADIO_ERP1'
+    this.packetTypeNumber = 1
+    this.RORG = this.data[0]
+    this.senderId = this.data.slice(this.data.length - 5, this.data.length - 1).toString('hex')
+    this.status = this.data[this.data.length - 1]
+    this.subTelNum = this.optionalData[0]
+    this.destinationID = this.optionalData.slice(1, 5).toString('hex')
+    this.RSSI = this.optionalData[5]
+    this.securityLevel = this.optionalData[6]
+    this.timeStamp = this.optionalData.slice(7, 9).toString('hex')
+    this.subTelGroups = []
+    var offset = 9
+    for (var i = 0; i < this.subTelNum; i++) {
+      var subTel = {
+        tick: this.optionalData[offset + (i * 3)],
+        RSSI: this.optionalData[offset + (i * 3) + 1],
+        status: this.optionalData[offset + (i * 3) + 2]
+      }
+      this.subTelGroups.push(subTel)
+    }
   }
 }
 
@@ -272,6 +304,7 @@ module.exports = {
   'ESP3Packet': ESP3Packet,
   'RadioERP1': RadioERP1,
   'Response': Response,
+  'RadioSubTel': RadioSubTel,
   'Event': Event,
   'CommonCommand': CommonCommand,
   'SmartAckCommand': SmartAckCommand,
