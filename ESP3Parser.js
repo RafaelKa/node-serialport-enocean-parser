@@ -123,18 +123,14 @@ class ESP3Parser extends Transform {
     }
     return crc8
   }
-
   _flush () {
     this.push(this.currentESP3Packet)
-    this.currentESP3Packet = new ESP3Packet()
+    this.currentESP3Packet = new Packets.ESP3Packet()
   }
 }
 
 class ESP3FullParser extends ESP3Parser {
-  constructor () {
-    super()
-  }
-  _flush (cb) {
+  _flush () {
     switch (this.currentESP3Packet.header.packetType) {
       case 1:
         this.currentESP3Packet = new Packets.RadioERP1(this.currentESP3Packet)
@@ -175,4 +171,7 @@ class ESP3FullParser extends ESP3Parser {
   }
 }
 
-module.exports = ESP3FullParser
+module.exports = {
+  SimpleParser: ESP3Parser,
+  FullParser: ESP3FullParser
+}
