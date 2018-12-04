@@ -42,12 +42,13 @@ class RadioERP1 extends ESP3Packet{
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "RADIO_ERP1"
+    this.packetTypeNumber = 1
     this.RORG = this.data[0]
     this.senderId = this.data.slice(this.data.length-5,this.data.length-1).toString("hex")
     this.status = this.data[this.data.length-1]
     this.subTelNum = this.optionalData[0]
     this.destinationID = this.optionalData.slice(1,5).toString("hex")
-    this.dBm = this.optionalData[this.optionalData.length-2]
+    this.RSSI = this.optionalData[this.optionalData.length-2]
     this.securityLevel = this.optionalData[this.optionalData.length-1]
   }
 }
@@ -62,6 +63,7 @@ class Response extends ESP3Packet{
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "RESPONSE"
+    this.packetTypeNumber = 2
     const CodeNames = {
       0: "RET_OK",
       1: "RET_ERROR",
@@ -87,6 +89,7 @@ class Event extends ESP3Packet{
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "EVENT"
+    this.packetTypeNumber = 4
     const EventNames = {
       1: "SA_RECLAIM_NOT_SUCCESSFUL",
       2: "SA_CONFIRM_LEARN",
@@ -110,6 +113,7 @@ class CommonCommand extends ESP3Packet{
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "COMMON_COMMAND"
+    this.packetTypeNumber = 5
     const CommandNames = {
       1: "CO_WR_SLEEP",
       2: "CO_WR_RESET",
@@ -178,6 +182,7 @@ class SmartAckCommand extends ESP3Packet{
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "SMART_ACK_COMMAND"
+    this.packetTypeNumber = 6
     const CommandNames = {
       1: "SA_WR_LEARNMODE",
       2: "SA_RD_LEARNMODE",
@@ -193,11 +198,31 @@ class SmartAckCommand extends ESP3Packet{
   }
 }
 
+class RadioMessage extends ESP3Packet{
+  constructor(esp3Packet){
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header,
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = "RADIO_MESSAGE"
+    this.packetTypeNumber = 9
+    this.subTelNum = this.optionalData[0]
+    this.destinationID = this.optionalData.slice(0,4).toString("hex")
+    this.sourceID = this.optionalData.slice(4,8).toString("hex")
+    this.RSSI = this.optionalData[this.optionalData.length-2]
+    this.securityLevel = this.optionalData[this.optionalData.length-1]
+  }
+}
+
 module.exports = {
   "ESP3Packet" : ESP3Packet,
   "RadioERP1" : RadioERP1,
   "Response" : Response,
   "Event" : Event,
   "CommonCommand" :CommonCommand,
-  "SmartAckCommand" : SmartAckCommand
+  "SmartAckCommand" : SmartAckCommand,
+  "RadioMessage" : RadioMessage
 }

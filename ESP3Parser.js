@@ -6,12 +6,6 @@
 
 const Transform = require("stream").Transform
 const Packets = require("./ESP3Packet")
-const ESP3Packet = Packets.ESP3Packet
-const RadioERP1 = Packets.RadioERP1
-const Response = Packets.Response
-const Event = Packets.Event
-const CommonCommand = Packets.CommonCommand
-const SmartAckCommand = Packets.SmartAckCommand
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
@@ -20,7 +14,7 @@ const SmartAckCommand = Packets.SmartAckCommand
 class ESP3Parser extends Transform {
   constructor(options = {}) {
     super({...options, ...{readableObjectMode: true}})
-    this.currentESP3Packet=new ESP3Packet()
+    this.currentESP3Packet=new Packets.ESP3Packet()
     this.tmp=null
     this.callbackForNextByte = this.waitForSyncByte
   }
@@ -40,7 +34,7 @@ class ESP3Parser extends Transform {
       "dataOffset": 0,
       "optionalDataOffset": 0
     }
-    this.currentESP3Packet = new ESP3Packet()
+    this.currentESP3Packet = new Packets.ESP3Packet()
     this.callbackForNextByte = this.fillHeader
   }
 
@@ -107,19 +101,22 @@ class ESP3Parser extends Transform {
   emitFetchedESP3Packet() {
     switch(this.currentESP3Packet.header.packetType){
     case 1:
-      this.currentESP3Packet = new RadioERP1(this.currentESP3Packet)
+      this.currentESP3Packet = new Packets.RadioERP1(this.currentESP3Packet)
       break
     case 2:
-      this.currentESP3Packet = new Response(this.currentESP3Packet)
+      this.currentESP3Packet = new Packets.Response(this.currentESP3Packet)
       break
     case 4:
-      this.currentESP3Packet = new Event(this.currentESP3Packet)
+      this.currentESP3Packet = new Packets.Event(this.currentESP3Packet)
       break
     case 5:
-      this.currentESP3Packet = new CommonCommand(this.currentESP3Packet)
+      this.currentESP3Packet = new Packets.CommonCommand(this.currentESP3Packet)
       break
     case 6:
-      this.currentESP3Packet = new SmartAckCommand(this.currentESP3Packet)
+      this.currentESP3Packet = new Packets.SmartAckCommand(this.currentESP3Packet)
+      break
+    case 9:
+      this.currentESP3Packet = new Packets.RadioMessage(this.currentESP3Packet)
       break
     }
     this._flush()
@@ -152,7 +149,7 @@ class ESP3Parser extends Transform {
 
   _flush() {
     this.push(this.currentESP3Packet)
-    this.currentESP3Packet = new ESP3Packet()
+    this.currentESP3Packet = new Packets.ESP3Packet()
   }
 }
 module.exports = ESP3Parser
