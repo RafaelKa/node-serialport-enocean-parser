@@ -236,6 +236,23 @@ class RadioMessage extends ESP3Packet {
   }
 }
 
+class RadioERP2 extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'RADIO_ERP2'
+    this.packetTypeNumber = 10
+    this.subTelNum = this.optionalData[0]
+    this.RSSI = this.optionalData[1]
+    this.securityLevel = this.optionalData[2]
+  }
+}
+
 module.exports = {
   'ESP3Packet': ESP3Packet,
   'RadioERP1': RadioERP1,
@@ -244,6 +261,6 @@ module.exports = {
   'CommonCommand': CommonCommand,
   'SmartAckCommand': SmartAckCommand,
   'RemoteManCommand': RemoteManCommand,
-  'RadioMessage': RadioMessage
-
+  'RadioMessage': RadioMessage,
+  'RadioERP2': RadioERP2
 }
