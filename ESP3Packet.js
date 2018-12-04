@@ -209,6 +209,8 @@ class RadioMessage extends ESP3Packet{
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "RADIO_MESSAGE"
     this.packetTypeNumber = 9
+    this.RORG = this.data[0]
+    this.content = this.data.slice(1,this.data.length)
     this.subTelNum = this.optionalData[0]
     this.destinationID = this.optionalData.slice(0,4).toString("hex")
     this.sourceID = this.optionalData.slice(4,8).toString("hex")
