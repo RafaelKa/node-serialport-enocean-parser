@@ -62,7 +62,7 @@ class ESP3Parser extends Transform {
         code: 1,
         name: "BROKEN_TELEGRAMM_ERROR",
         desc: "header checksum test failed",
-        lineNumber: 94
+        lineNumber: 61
       });
       return
     }
