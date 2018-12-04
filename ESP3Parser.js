@@ -124,6 +124,9 @@ class ESP3Parser extends Transform {
       case 10:
         this.currentESP3Packet = new Packets.RadioERP2(this.currentESP3Packet)
         break
+      case 16:
+        this.currentESP3Packet = new Packets.Radio802(this.currentESP3Packet)
+        break
     }
     this._flush()
   }
