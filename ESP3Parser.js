@@ -5,30 +5,28 @@
 // Copyright 2018 Holger Will <h.will@klimapartner.de>
 
 const Transform = require("stream").Transform
-const Packets = require("./ESP3Packet")
-const ESP3Packet = Packets.ESP3Packet
-const Radio_ERP1 = Packets.Radio_ERP1
-const Response = Packets.Response
-const Event = Packets.Event
-const Common_Command = Packets.Common_Command
+const ESP3Packet = require("./ESP3/Packet")
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
 // More: https://www.enocean.com/fr/knowledge-base-doku/enoceansystemspecification:issue:faqesp2esp3/?purge=1
 
 class ESP3Parser extends Transform {
+
   constructor(options = {}) {
     super({...options, ...{readableObjectMode: true}})
-    this.currentESP3Packet=new ESP3Packet()
+    this.currentESP3Packet = new ESP3Packet()
     this.tmp=null
     this.callbackForNextByte = this.waitForSyncByte
   }
+
   _transform(chunk, encoding, cb) {
     for (var offset = 0; offset < chunk.length; offset++) {
       this.callbackForNextByte(chunk[offset])
     }
     cb()
   }
+
   waitForSyncByte(byte) {
     if (byte !== 0x55) {
       return
@@ -55,6 +53,7 @@ class ESP3Parser extends Transform {
     this.currentESP3Packet.header.packetType = this.tmp.header[3]
     this.callbackForNextByte = this.fetchCRC8ForHeaderAndCheck
   }
+
   fetchCRC8ForHeaderAndCheck(byte) {
     if (this.getCrc8(this.tmp.header) != byte) {
       this.callbackForNextByte = this.waitForSyncByte
@@ -67,6 +66,7 @@ class ESP3Parser extends Transform {
     this.currentESP3Packet.optionalData = Buffer.alloc(this.currentESP3Packet.header.optionalLength)
     this.callbackForNextByte = this.fillData
   }
+
   fillData(byte) {
     if (this.tmp.dataOffset <  this.currentESP3Packet.header.dataLength -1) {
       this.currentESP3Packet.data.fill(byte, this.tmp.dataOffset)
@@ -81,6 +81,7 @@ class ESP3Parser extends Transform {
     }
     this.callbackForNextByte = this.fetchCRC8ForDataAndCheck
   }
+
   fillOptionalData(byte) {
     if (this.tmp.optionalDataOffset <  this.currentESP3Packet.header.optionalLength -1) {
       this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset)
@@ -90,6 +91,7 @@ class ESP3Parser extends Transform {
     this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset)
     this.callbackForNextByte = this.fetchCRC8ForDataAndCheck
   }
+
   fetchCRC8ForDataAndCheck(byte){
     this.callbackForNextByte = this.waitForSyncByte
     var datas = Buffer.concat(
@@ -103,25 +105,14 @@ class ESP3Parser extends Transform {
     this.currentESP3Packet.crc8Data = byte
     this.emitFetchedESP3Packet()
   }
+
   emitFetchedESP3Packet() {
-    switch(this.currentESP3Packet.header.packetType){
-    case 1:
-      this.currentESP3Packet = new Radio_ERP1(this.currentESP3Packet)
-      break
-    case 2:
-      this.currentESP3Packet = new Response(this.currentESP3Packet)
-      break
-    case 4:
-      this.currentESP3Packet = new Event(this.currentESP3Packet)
-      break
-    case 5:
-      this.currentESP3Packet = new Common_Command(this.currentESP3Packet)
-      break
-    }
     var out = this.currentESP3Packet
     this.currentESP3Packet = new ESP3Packet()
+    Object.freeze(out)
     this.push(out)
   }
+
   getCrc8(buffer) {
     var u8CRC8Table = [
       0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15, 0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d,
@@ -149,9 +140,11 @@ class ESP3Parser extends Transform {
   }
 
   _flush(cb) {
+    Object.freeze(this.currentESP3Packet)
     this.push(this.currentESP3Packet)
     this.currentESP3Packet = new ESP3Packet()
     cb()
   }
 }
+
 module.exports = ESP3Parser
