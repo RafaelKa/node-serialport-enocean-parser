@@ -122,9 +122,7 @@ class ESP3Parser extends Transform {
       this.currentESP3Packet = new SmartAckCommand(this.currentESP3Packet)
       break
     }
-    var out = this.currentESP3Packet
-    this.currentESP3Packet = new ESP3Packet()
-    this.push(out)
+    this._flush()
   }
   getCrc8(buffer) {
     var u8CRC8Table = [
@@ -152,10 +150,9 @@ class ESP3Parser extends Transform {
     return crc8
   }
 
-  _flush(cb) {
+  _flush() {
     this.push(this.currentESP3Packet)
     this.currentESP3Packet = new ESP3Packet()
-    cb()
   }
 }
 module.exports = ESP3Parser

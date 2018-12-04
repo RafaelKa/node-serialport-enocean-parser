@@ -108,7 +108,14 @@ describe("serialport enocean parser", function () {
         esp3parser.on("data", spy)
         esp3parser.write(Buffer.from("5500010002650000","hex"))
         assert.equal(spy.args[0][0].constructor.name, "Response", "Packet not a Smart_Ack_Packet")
-        assert.equal(spy.args[0][0].returnCode, 0, "Packet not a Smart_Ack_Packet")
+        assert.equal(spy.args[0][0].returnCode, 0, "")
+      })
+      it("EVENT SHOULD be emitted as Event Object", function () {
+        const spy = sinon.spy()
+        esp3parser.on("data", spy)
+        esp3parser.write(Buffer.from("550001000477041c","hex"))
+        assert.equal(spy.args[0][0].constructor.name, "Event", "Packet not a Smart_Ack_Packet")
+        assert.equal(spy.args[0][0].eventCode, 4, "")
       })
     })
 

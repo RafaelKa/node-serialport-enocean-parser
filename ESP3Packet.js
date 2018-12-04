@@ -1,43 +1,4 @@
-/*jslint node: true */
 "use strict"
-
-/**
- * ESP3 packet structure through the serial port.
- *
- * Sync  is 0x55
- * CRC8H is CRC8 for ‘Header’
- * CRC8D is CRC8 for ‘Datas’ (Data and Optional Data)
- *
- *                   bytes
- *                     ▼
- * +---------------+ -----
- * |   Sync Byte   |   1
- * +---------------+ - + - ----------------------+
- * |               |   2    Data length          |
- * |               |   +                         |
- * |    Header     |   1    Optional Data length |
- * |               |   +                         |
- * |               |   1    Packet type          |
- * +---------------+ - + - ----------------------+
- * |  CRC8 Header  |   1
- * +---------------+ - + -
- * |               |
- * |               |
- * |     Data      |   X
- * |               |
- * |               |
- * +---------------+ - + -
- * |               |
- * |               |
- * | Optional Data |   Y
- * |               |
- * |               |
- * +---------------+ - + -
- * |   CRC8 Data   |   1
- * +---------------+ -----
- *
- * also full ESP3 Packet Length = 7 + X(Data length) + Y(Optional Data length)
- */
 
 class ESP3Packet {
   constructor(){
@@ -84,12 +45,10 @@ class RadioERP1 extends ESP3Packet{
     this.RORG = this.data[0]
     this.senderId = this.data.slice(this.data.length-5,this.data.length-1).toString("hex")
     this.status = this.data[this.data.length-1]
-    if(this.optionalData.length>0){
-      this.subTelNum = this.optionalData[0]
-      this.destinationID = this.optionalData.slice(1,5).toString("hex")
-      this.dBm = this.optionalData[this.optionalData.length-2]
-      this.securityLevel = this.optionalData[this.optionalData.length-1]
-    }
+    this.subTelNum = this.optionalData[0]
+    this.destinationID = this.optionalData.slice(1,5).toString("hex")
+    this.dBm = this.optionalData[this.optionalData.length-2]
+    this.securityLevel = this.optionalData[this.optionalData.length-1]
   }
 }
 
