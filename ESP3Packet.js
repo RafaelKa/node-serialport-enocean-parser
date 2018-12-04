@@ -196,7 +196,26 @@ class SmartAckCommand extends ESP3Packet{
     this.commandType = commandTypes[this.data[0]]
   }
 }
-
+class RemoteManCommand extends ESP3Packet{
+  constructor(esp3Packet){
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header,
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = "REMOTE_MAN_COMMAND"
+    this.packetTypeNumber = 7
+    this.function = parseInt(this.data.slice(0,2).toString("hex"),16)
+    this.manufacturerID = parseInt(this.data.slice(2,4).toString("hex"),16)
+    this.msg = this.data.slice(4,this.data.length)
+    this.destinationID = this.optionalData.slice(0,4).toString("hex")
+    this.sourceID = this.optionalData.slice(4,8).toString("hex")
+    this.RSSI = this.optionalData[this.optionalData.length-2]
+    this.sendWithDelay = this.optionalData[this.optionalData.length-1]
+  }
+}
 class RadioMessage extends ESP3Packet{
   constructor(esp3Packet){
     super()
@@ -210,7 +229,6 @@ class RadioMessage extends ESP3Packet{
     this.packetTypeNumber = 9
     this.RORG = this.data[0]
     this.content = this.data.slice(1,this.data.length)
-    this.subTelNum = this.optionalData[0]
     this.destinationID = this.optionalData.slice(0,4).toString("hex")
     this.sourceID = this.optionalData.slice(4,8).toString("hex")
     this.RSSI = this.optionalData[this.optionalData.length-2]
@@ -225,5 +243,7 @@ module.exports = {
   "Event" : Event,
   "CommonCommand" :CommonCommand,
   "SmartAckCommand" : SmartAckCommand,
+  "RemoteManCommand" : RemoteManCommand,
   "RadioMessage" : RadioMessage
+
 }

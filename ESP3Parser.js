@@ -115,6 +115,9 @@ class ESP3Parser extends Transform {
     case 6:
       this.currentESP3Packet = new Packets.SmartAckCommand(this.currentESP3Packet)
       break
+    case 7:
+      this.currentESP3Packet = new Packets.RemoteManCommand(this.currentESP3Packet)
+      break
     case 9:
       this.currentESP3Packet = new Packets.RadioMessage(this.currentESP3Packet)
       break
