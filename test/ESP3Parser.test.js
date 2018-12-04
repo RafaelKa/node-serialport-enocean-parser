@@ -45,7 +45,9 @@ describe('serialport enocean parser', function () {
        */
       it('packets MUST be emitted, if messy bytes occur before the header was detected and there are at least 5 bytes to real sync byte', function () {
         const spy = sinon.spy()
+        const error_spy = sinon.spy()
         esp3parser.on('data', spy)
+        esp3parser.on('error', error_spy)
 
         const messyBytes = [ // ESP3 can lose packets if 0x55 occurs in lesser than 5 bytes to real sync byte, therefore no 0x55 is defined on dangerous offsets.
           '55a03d790001',
@@ -65,6 +67,7 @@ describe('serialport enocean parser', function () {
 
         esp3parser.write(largeAndMessyByteStream)
         assert.equal(spy.callCount, telegrams.length, 'Received unexpected count of packets.')
+        assert.equal(error_spy.callCount, telegrams.length, 'Received unexpected count of packets.')
       })
 
       it('packet SHOULD NOT be emitted, if data or optional data is invalid', function () {
