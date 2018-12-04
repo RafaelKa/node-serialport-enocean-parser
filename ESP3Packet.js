@@ -295,8 +295,31 @@ class Radio802 extends ESP3Packet {
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = 'RADIO_802_15_4'
-    this.packetTypeNumber = 10
+    this.packetTypeNumber = 16
     this.RSSI = this.optionalData[0]
+  }
+}
+
+class Command24 extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'Command_2_4'
+    this.packetTypeNumber = 17
+    const commandTypes = [
+      { number: 0, name: 'undefined' },
+      { number: 1, name: 'SET_CHANNEL' },
+      { number: 2, name: 'GET_CHANNEL' }
+    ]
+    this.commandType = commandTypes[this.data[0]]
+    if (this.data[0] === 1) {
+      this.channel = this.data[1]
+    }
   }
 }
 
@@ -311,5 +334,6 @@ module.exports = {
   'RemoteManCommand': RemoteManCommand,
   'RadioMessage': RadioMessage,
   'RadioERP2': RadioERP2,
-  'Radio802': Radio802
+  'Radio802': Radio802,
+  'Command24': Command24
 }
