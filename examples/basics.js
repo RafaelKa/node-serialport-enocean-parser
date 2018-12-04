@@ -123,7 +123,7 @@ function ESP3PacketFromRockerSwitchPTMXXX (telegram) {
   } else {
     pushedButtons += 'no'
   }
-  if (secondActionIsPresent === 1) {
+  if (secondActionIsPresent == 1) {
     pushedButtons += ' & ' + buttonName[rockersSecondAction]
   }
 
