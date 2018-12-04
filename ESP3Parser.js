@@ -7,11 +7,11 @@
 const Transform = require("stream").Transform
 const Packets = require("./ESP3Packet")
 const ESP3Packet = Packets.ESP3Packet
-const Radio_ERP1 = Packets.Radio_ERP1
+const RadioERP1 = Packets.RadioERP1
 const Response = Packets.Response
 const Event = Packets.Event
-const Common_Command = Packets.Common_Command
-const Smart_Ack_Command = Packets.Smart_Ack_Command
+const CommonCommand = Packets.CommonCommand
+const SmartAckCommand = Packets.SmartAckCommand
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
@@ -107,7 +107,7 @@ class ESP3Parser extends Transform {
   emitFetchedESP3Packet() {
     switch(this.currentESP3Packet.header.packetType){
     case 1:
-      this.currentESP3Packet = new Radio_ERP1(this.currentESP3Packet)
+      this.currentESP3Packet = new RadioERP1(this.currentESP3Packet)
       break
     case 2:
       this.currentESP3Packet = new Response(this.currentESP3Packet)
@@ -116,10 +116,10 @@ class ESP3Parser extends Transform {
       this.currentESP3Packet = new Event(this.currentESP3Packet)
       break
     case 5:
-      this.currentESP3Packet = new Common_Command(this.currentESP3Packet)
+      this.currentESP3Packet = new CommonCommand(this.currentESP3Packet)
       break
     case 6:
-      this.currentESP3Packet = new Smart_Ack_Command(this.currentESP3Packet)
+      this.currentESP3Packet = new SmartAckCommand(this.currentESP3Packet)
       break
     }
     var out = this.currentESP3Packet
