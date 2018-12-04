@@ -1,44 +1,44 @@
-/*jslint node: true */
-"use strict"
+/* jslint node: true */
+'use strict'
 
 // Copyright 2015 Rafael Kähm <rafael@kaehms.de>
 // Copyright 2018 Holger Will <h.will@klimapartner.de>
 
-const Transform = require("stream").Transform
-const Packets = require("./ESP3Packet")
+const Transform = require('stream').Transform
+const Packets = require('./ESP3Packet')
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
 // More: https://www.enocean.com/fr/knowledge-base-doku/enoceansystemspecification:issue:faqesp2esp3/?purge=1
 
 class ESP3Parser extends Transform {
-  constructor(options = {}) {
-    super({...options, ...{readableObjectMode: true}})
-    this.currentESP3Packet=new Packets.ESP3Packet()
-    this.tmp=null
+  constructor (options = {}) {
+    super({ ...options, ...{ readableObjectMode: true } })
+    this.currentESP3Packet = new Packets.ESP3Packet()
+    this.tmp = null
     this.callbackForNextByte = this.waitForSyncByte
   }
-  _transform(chunk, encoding, cb) {
+  _transform (chunk, encoding, cb) {
     for (var offset = 0; offset < chunk.length; offset++) {
       this.callbackForNextByte(chunk[offset])
     }
     cb()
   }
-  waitForSyncByte(byte) {
+  waitForSyncByte (byte) {
     if (byte !== 0x55) {
       return
     }
     this.tmp = {
-      "header": Buffer.alloc(4),
-      "headerOffset": 0,
-      "dataOffset": 0,
-      "optionalDataOffset": 0
+      'header': Buffer.alloc(4),
+      'headerOffset': 0,
+      'dataOffset': 0,
+      'optionalDataOffset': 0
     }
     this.currentESP3Packet = new Packets.ESP3Packet()
     this.callbackForNextByte = this.fillHeader
   }
 
-  fillHeader(byte) {
+  fillHeader (byte) {
     if (this.tmp.headerOffset < 3) {
       this.tmp.header.fill(byte, this.tmp.headerOffset)
       this.tmp.headerOffset++
@@ -50,8 +50,8 @@ class ESP3Parser extends Transform {
     this.currentESP3Packet.header.packetType = this.tmp.header[3]
     this.callbackForNextByte = this.fetchCRC8ForHeaderAndCheck
   }
-  fetchCRC8ForHeaderAndCheck(byte) {
-    if (this.getCrc8(this.tmp.header) != byte) {
+  fetchCRC8ForHeaderAndCheck (byte) {
+    if (this.getCrc8(this.tmp.header) !== byte) {
       this.callbackForNextByte = this.waitForSyncByte
       // @todo : Log this fail
       return
@@ -62,22 +62,22 @@ class ESP3Parser extends Transform {
     this.currentESP3Packet.optionalData = Buffer.alloc(this.currentESP3Packet.header.optionalLength)
     this.callbackForNextByte = this.fillData
   }
-  fillData(byte) {
-    if (this.tmp.dataOffset <  this.currentESP3Packet.header.dataLength -1) {
+  fillData (byte) {
+    if (this.tmp.dataOffset < this.currentESP3Packet.header.dataLength - 1) {
       this.currentESP3Packet.data.fill(byte, this.tmp.dataOffset)
       this.tmp.dataOffset++
       return
     }
     this.currentESP3Packet.data.fill(byte, this.tmp.dataOffset)
 
-    if(this.currentESP3Packet.header.optionalLength > 0) {
+    if (this.currentESP3Packet.header.optionalLength > 0) {
       this.callbackForNextByte = this.fillOptionalData
       return
     }
     this.callbackForNextByte = this.fetchCRC8ForDataAndCheck
   }
-  fillOptionalData(byte) {
-    if (this.tmp.optionalDataOffset <  this.currentESP3Packet.header.optionalLength -1) {
+  fillOptionalData (byte) {
+    if (this.tmp.optionalDataOffset < this.currentESP3Packet.header.optionalLength - 1) {
       this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset)
       this.tmp.optionalDataOffset++
       return
@@ -85,46 +85,46 @@ class ESP3Parser extends Transform {
     this.currentESP3Packet.optionalData.fill(byte, this.tmp.optionalDataOffset)
     this.callbackForNextByte = this.fetchCRC8ForDataAndCheck
   }
-  fetchCRC8ForDataAndCheck(byte){
+  fetchCRC8ForDataAndCheck (byte) {
     this.callbackForNextByte = this.waitForSyncByte
     var datas = Buffer.concat(
       [this.currentESP3Packet.data, this.currentESP3Packet.optionalData],
       (this.currentESP3Packet.header.dataLength + this.currentESP3Packet.header.optionalLength)
     )
-    if (this.getCrc8(datas) != byte) {
+    if (this.getCrc8(datas) !== byte) {
       // todo : Log this fail
       return
     }
     this.currentESP3Packet.crc8Data = byte
     this.emitFetchedESP3Packet()
   }
-  emitFetchedESP3Packet() {
-    switch(this.currentESP3Packet.header.packetType){
-    case 1:
-      this.currentESP3Packet = new Packets.RadioERP1(this.currentESP3Packet)
-      break
-    case 2:
-      this.currentESP3Packet = new Packets.Response(this.currentESP3Packet)
-      break
-    case 4:
-      this.currentESP3Packet = new Packets.Event(this.currentESP3Packet)
-      break
-    case 5:
-      this.currentESP3Packet = new Packets.CommonCommand(this.currentESP3Packet)
-      break
-    case 6:
-      this.currentESP3Packet = new Packets.SmartAckCommand(this.currentESP3Packet)
-      break
-    case 7:
-      this.currentESP3Packet = new Packets.RemoteManCommand(this.currentESP3Packet)
-      break
-    case 9:
-      this.currentESP3Packet = new Packets.RadioMessage(this.currentESP3Packet)
-      break
+  emitFetchedESP3Packet () {
+    switch (this.currentESP3Packet.header.packetType) {
+      case 1:
+        this.currentESP3Packet = new Packets.RadioERP1(this.currentESP3Packet)
+        break
+      case 2:
+        this.currentESP3Packet = new Packets.Response(this.currentESP3Packet)
+        break
+      case 4:
+        this.currentESP3Packet = new Packets.Event(this.currentESP3Packet)
+        break
+      case 5:
+        this.currentESP3Packet = new Packets.CommonCommand(this.currentESP3Packet)
+        break
+      case 6:
+        this.currentESP3Packet = new Packets.SmartAckCommand(this.currentESP3Packet)
+        break
+      case 7:
+        this.currentESP3Packet = new Packets.RemoteManCommand(this.currentESP3Packet)
+        break
+      case 9:
+        this.currentESP3Packet = new Packets.RadioMessage(this.currentESP3Packet)
+        break
     }
     this._flush()
   }
-  getCrc8(buffer) {
+  getCrc8 (buffer) {
     var u8CRC8Table = [
       0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15, 0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d,
       0x70, 0x77, 0x7e, 0x79, 0x6c, 0x6b, 0x62, 0x65, 0x48, 0x4f, 0x46, 0x41, 0x54, 0x53, 0x5a, 0x5d,
@@ -144,13 +144,13 @@ class ESP3Parser extends Transform {
       0xde, 0xd9, 0xd0, 0xd7, 0xc2, 0xc5, 0xcc, 0xcb, 0xe6, 0xe1, 0xe8, 0xef, 0xfa, 0xfd, 0xf4, 0xf3
     ]
     var crc8 = 0
-    for (var i = 0 ; i < buffer.length ; i++) {
+    for (var i = 0; i < buffer.length; i++) {
       crc8 = u8CRC8Table[(crc8 ^ buffer[i])]
     }
     return crc8
   }
 
-  _flush() {
+  _flush () {
     this.push(this.currentESP3Packet)
     this.currentESP3Packet = new Packets.ESP3Packet()
   }
