@@ -64,18 +64,17 @@ class Response extends ESP3Packet{
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "RESPONSE"
     this.packetTypeNumber = 2
-    const CodeNames = {
-      0: "RET_OK",
-      1: "RET_ERROR",
-      2: "RET_NOT_SUPPORTED",
-      3: "RET_WRONG_PARAM",
-      4: "RET_OPERATION_DENIED",
-      5: "RET_LOCK_SET",
-      6: "RET_BUFFER_TO_SMALL",
-      7: "RET_NO_FREE_BUFFER"
-    }
-    this.returnCode = this.data[0]
-    this.codeName = CodeNames[this.returnCode]
+    const responseTypes= [
+      {number:0, name: "RET_OK"},
+      {number:1, name: "RET_ERROR"},
+      {number:2, name: "RET_NOT_SUPPORTED"},
+      {number:3, name: "RET_WRONG_PARAM"},
+      {number:4, name: "RET_OPERATION_DENIED"},
+      {number:5, name: "RET_LOCK_SET"},
+      {number:6, name: "RET_BUFFER_TO_SMALL"},
+      {number:7, name: "RET_NO_FREE_BUFFER"}
+    ]
+    this.responseType = responseTypes[this.data[0]]
   }
 }
 
@@ -90,16 +89,16 @@ class Event extends ESP3Packet{
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "EVENT"
     this.packetTypeNumber = 4
-    const EventNames = {
-      1: "SA_RECLAIM_NOT_SUCCESSFUL",
-      2: "SA_CONFIRM_LEARN",
-      3: "SA_LEARN_ACK",
-      4: "CO_READY",
-      5: "CO_EVENT_SECUREDEVICES",
-      6: "CO_DUTYCYCLE_LIMITCO_TRANSMIT_FAILED"
-    }
-    this.eventCode = this.data[0]
-    this.codeName = EventNames[this.returnCode]
+    const eventTypes = [
+      {number: 0, name:"undefined"},
+      {number: 1, name: "SA_RECLAIM_NOT_SUCCESSFUL"},
+      {number: 2, name: "SA_CONFIRM_LEARN"},
+      {number: 3, name: "SA_LEARN_ACK"},
+      {number: 4, name: "CO_READY"},
+      {number: 5, name: "CO_EVENT_SECUREDEVICES"},
+      {number: 6, name: "CO_DUTYCYCLE_LIMITCO_TRANSMIT_FAILED"}
+    ]
+    this.eventType = eventTypes[this.data[0]]
   }
 }
 
@@ -114,61 +113,61 @@ class CommonCommand extends ESP3Packet{
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "COMMON_COMMAND"
     this.packetTypeNumber = 5
-    const CommandNames = {
-      1: "CO_WR_SLEEP",
-      2: "CO_WR_RESET",
-      3: "CO_RD_VERSION",
-      4: "CO_RD_SYS_LOG",
-      5: "CO_WR_SYS_LOG",
-      6: "CO_WR_BIST",
-      7: "CO_WR_IDBASE",
-      8: "CO_RD_IDBASE",
-      9: "CO_WR_REPEATER",
-      10: "CO_RD_REPEATER",
-      11: "CO_WR_FILTER_ADD",
-      12: "CO_WR_FILTER_DEL",
-      13: "CO_WR_FILTER_DEL_ALL",
-      14: "CO_WR_FILTER_ENABLE",
-      15: "CO_RD_FILTER",
-      16: "CO_WR_WAIT_MATURITY",
-      17: "CO_WR_SUBTEL",
-      18: "CO_WR_MEM",
-      19: "CO_RD_MEM",
-      20: "CO_RD_MEM_ADDRESS",
-      21: "CO_RD_SECURITY",
-      22: "CO_WR_SECURITY",
-      23: "CO_WR_LEARNMODE",
-      24: "CO_RD_LEARNMODE",
-      25: "CO_WR_SECUREDEVICE_ADD",
-      26: "CO_WR_SECUREDEVICE_DEL",
-      27: "CO_RD_SECUREDEVICE_BY_INDEX",
-      28: "CO_WR_MODE",
-      29: "CO_RD_NUMSECUREDEVICES",
-      30: "CO_RD_SECUREDEVICE_BY_ID",
-      31: "CO_WR_SECUREDEVICE_ADD_PSK",
-      32: "CO_WR_SECUREDEVICE_SENDTEACHIN",
-      33: "CO_WR_TEMPORARY_RLC_WINDOW",
-      34: "CO_RD_SECUREDEVICE_PSK",
-      35: "CO_RD_DUTYCYCLE_LIMIT",
-      37: "CO_SET_BAUDRATE",
-      38: "CO_GET_FREQUENCY_INFO",
-      40: "Reserved",
-      41: "CO_GET_STEPCODE",
-      42: "Reserved",
-      43: "Reserved",
-      44: "Reserved",
-      45: "Reserved",
-      46: "Reserved",
-      47: "Reserved",
-      48: "CO_WR_REMAN_CODE",
-      49: "CO_WR_STARTUP_DELAY",
-      50: "CO_WR_REMAN_REPEATING",
-      51: "CO_RD_REMAN_REPEATING",
-      52: "CO_SET_NOISETHRESHOLD",
-      53: "CO_GET_NOISETHRESHOLD"
-    }
-    this.commandCode = this.data[0]
-    this.codeName = CommandNames[this.returnCode]
+    const commandTypes= [
+      {number: 0, name: "undefiend"},
+      {number: 1, name: "CO_WR_SLEEP"},
+      {number: 2, name: "CO_WR_RESET"},
+      {number: 3, name: "CO_RD_VERSION"},
+      {number: 4, name: "CO_RD_SYS_LOG"},
+      {number: 5, name: "CO_WR_SYS_LOG"},
+      {number: 6, name: "CO_WR_BIST"},
+      {number: 7, name: "CO_WR_IDBASE"},
+      {number: 8, name: "CO_RD_IDBASE"},
+      {number: 9, name: "CO_WR_REPEATER"},
+      {number: 10, name: "CO_RD_REPEATER"},
+      {number: 11, name: "CO_WR_FILTER_ADD"},
+      {number: 12, name: "CO_WR_FILTER_DEL"},
+      {number: 13, name: "CO_WR_FILTER_DEL_ALL"},
+      {number: 14, name: "CO_WR_FILTER_ENABLE"},
+      {number: 15, name: "CO_RD_FILTER"},
+      {number: 16, name: "CO_WR_WAIT_MATURITY"},
+      {number: 17, name: "CO_WR_SUBTEL"},
+      {number: 18, name: "CO_WR_MEM"},
+      {number: 19, name: "CO_RD_MEM"},
+      {number: 20, name: "CO_RD_MEM_ADDRESS"},
+      {number: 21, name: "CO_RD_SECURITY"},
+      {number: 22, name: "CO_WR_SECURITY"},
+      {number: 23, name: "CO_WR_LEARNMODE"},
+      {number: 24, name: "CO_RD_LEARNMODE"},
+      {number: 25, name: "CO_WR_SECUREDEVICE_ADD"},
+      {number: 26, name: "CO_WR_SECUREDEVICE_DEL"},
+      {number: 27, name: "CO_RD_SECUREDEVICE_BY_INDEX"},
+      {number: 28, name: "CO_WR_MODE"},
+      {number: 29, name: "CO_RD_NUMSECUREDEVICES"},
+      {number: 30, name: "CO_RD_SECUREDEVICE_BY_ID"},
+      {number: 31, name: "CO_WR_SECUREDEVICE_ADD_PSK"},
+      {number: 32, name: "CO_WR_SECUREDEVICE_SENDTEACHIN"},
+      {number: 33, name: "CO_WR_TEMPORARY_RLC_WINDOW"},
+      {number: 34, name: "CO_RD_SECUREDEVICE_PSK"},
+      {number: 35, name: "CO_RD_DUTYCYCLE_LIMIT"},
+      {number: 37, name: "CO_SET_BAUDRATE"},
+      {number: 38, name: "CO_GET_FREQUENCY_INFO"},
+      {number: 40, name: "Reserved"},
+      {number: 41, name: "CO_GET_STEPCODE"},
+      {number: 42, name: "Reserved"},
+      {number: 43, name: "Reserved"},
+      {number: 44, name: "Reserved"},
+      {number: 45, name: "Reserved"},
+      {number: 46, name: "Reserved"},
+      {number: 47, name: "Reserved"},
+      {number: 48, name: "CO_WR_REMAN_CODE"},
+      {number: 49, name: "CO_WR_STARTUP_DELAY"},
+      {number: 50, name: "CO_WR_REMAN_REPEATING"},
+      {number: 51, name: "CO_RD_REMAN_REPEATING"},
+      {number: 52, name: "CO_SET_NOISETHRESHOLD"},
+      {number: 53, name: "CO_GET_NOISETHRESHOLD"}
+    ]
+    this.commandType = commandTypes[this.data[0]]
   }
 }
 
@@ -183,18 +182,18 @@ class SmartAckCommand extends ESP3Packet{
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = "SMART_ACK_COMMAND"
     this.packetTypeNumber = 6
-    const CommandNames = {
-      1: "SA_WR_LEARNMODE",
-      2: "SA_RD_LEARNMODE",
-      3: "SA_WR_LEARNCONFIRM",
-      4: "SA_WR_CLIENTLEARNRQ",
-      5: "SA_WR_RESET",
-      6: "SA_RD_LEARNEDCLIENTS",
-      7: "SA_WR_RECLAIMS",
-      8: "SA_WR_POSTMASTER"
-    }
-    this.commandCode = this.data[0]
-    this.codeName = CommandNames[this.returnCode]
+    const commandTypes = [
+      {number: 0, name: "undefined"},
+      {number: 1, name: "SA_WR_LEARNMODE"},
+      {number: 2, name: "SA_RD_LEARNMODE"},
+      {number: 3, name: "SA_WR_LEARNCONFIRM"},
+      {number: 4, name: "SA_WR_CLIENTLEARNRQ"},
+      {number: 5, name: "SA_WR_RESET"},
+      {number: 6, name: "SA_RD_LEARNEDCLIENTS"},
+      {number: 7, name: "SA_WR_RECLAIMS"},
+      {number: 8, name: "SA_WR_POSTMASTER"}
+    ]
+    this.commandType = commandTypes[this.data[0]]
   }
 }
 
