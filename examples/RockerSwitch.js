@@ -1,7 +1,7 @@
-const SerialPort = require("serialport")
-const EnoceanParser = require("../ESP3Parser")
+const SerialPort = require('serialport')
+const EnoceanParser = require('../ESP3Parser')
 
-const port = new SerialPort("/dev/ttyUSB0",{ baudRate: 57600 })
+const port = new SerialPort('/dev/ttyUSB0', { baudRate: 57600 })
 const tcm310 = port.pipe(new EnoceanParser())
 
 /*
@@ -14,61 +14,57 @@ const tcm310 = port.pipe(new EnoceanParser())
  */
 
 /* eslint-disable no-console  */
-tcm310.on("data", function(esp3Packet) {
-  console.log(ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet))
+tcm310.on('data', function (esp3Packet) {
+  console.log(ESP3PacketFromRockerSwitchPTMXXX(esp3Packet))
 })
 
-function ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet) {
-
-
+function ESP3PacketFromRockerSwitchPTMXXX (esp3Packet) {
   if (esp3Packet.RORG !== 0xF6) {
-    return "I don't understand " + esp3Packet.RORG.toString(16) + " this telegram, i can show only Rocker Switch telegrams!"
+    return "I don't understand " + esp3Packet.RORG.toString(16) + ' this telegram, i can show only Rocker Switch telegrams!'
   }
 
   // see RPS Telegram in "EnOcean Equipment Profiles (EEP)"
-  var rockersFirstAction = (esp3Packet.data >>> 5)          // 11100000 >> 5              | Shortcut : R1
-  var energyBow = ((esp3Packet.data >> 4) & 1)              // 00010000                   | Shortcut : EB  -> 0 = released or 1 = pressed
+  var rockersFirstAction = (esp3Packet.data >>> 5) // 11100000 >> 5              | Shortcut : R1
+  var energyBow = ((esp3Packet.data >> 4) & 1) // 00010000                   | Shortcut : EB  -> 0 = released or 1 = pressed
   var rockersSecondAction = ((esp3Packet.data >> 1) & 0x07) // (00001110 >> 1) & 00000111 | Shortcut : R2
-  var secondActionIsPresent = ((esp3Packet.data) & 1)       // 00000001                   | Shortcut : EB
+  var secondActionIsPresent = ((esp3Packet.data) & 1) // 00000001                   | Shortcut : EB
 
   // see Statusfield for RPS in "EnOcean Equipment Profiles (EEP)"
   // unused: var T21 = (esp3Packet.status & 0x20) == 0x20              // 00100000                   | 0 = PTM1xx or 1 = PTM2xx
-  var NU = (esp3Packet.status & 0x10) == 0x10               // 00010000                   | 0 = unassigned or 1 = normal
+  var NU = (esp3Packet.status & 0x10) === 0x10 // 00010000                   | 0 = unassigned or 1 = normal
 
   var buttonName = {
-    0: "AI",
-    1: "A0",
-    2: "BI",
-    3: "B0",
-    4: "CI",
-    5: "C0",
-    6: "DI",
-    7: "D0"
+    0: 'AI',
+    1: 'A0',
+    2: 'BI',
+    3: 'B0',
+    4: 'CI',
+    5: 'C0',
+    6: 'DI',
+    7: 'D0'
   }
 
   var energyBowDescription = {
-    0: "on up", // released
-    1: "on down" // pressed
+    0: 'on up', // released
+    1: 'on down' // pressed
   }
 
-  var pushedButtons = ""
+  var pushedButtons = ''
 
-  if (NU == 1) {
+  if (NU === 1) {
     pushedButtons += buttonName[rockersFirstAction]
   } else {
-    pushedButtons += "no"
+    pushedButtons += 'no'
   }
-  if (secondActionIsPresent == 1) {
-    pushedButtons += " & " + buttonName[rockersSecondAction]
+  if (secondActionIsPresent === 1) {
+    pushedButtons += ' & ' + buttonName[rockersSecondAction]
   }
 
-  var output = "{" + "\n" +
-		"  Sender ID:  " + esp3Packet.senderID + "\n" +
-		"  energy bow: " + energyBowDescription[energyBow] + "\n" +
-		"  button[s]:  " + pushedButtons + "\n" +
-		"}\n"
-
+  var output = '{' + '\n' +
+    '  Sender ID:  ' + esp3Packet.senderID + '\n' +
+    '  energy bow: ' + energyBowDescription[energyBow] + '\n' +
+    '  button[s]:  ' + pushedButtons + '\n' +
+    '}\n'
 
   return output
-
 }
