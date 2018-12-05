@@ -8,9 +8,10 @@ doit()
 
 async function doit () {
   var cc = new Packet.CommonCommand()
-  cc.load({data: Buffer.from('08', 'hex')}) // Common Command Code 08: CO_RD_IDBASE
+  cc.load({ data: Buffer.from('08', 'hex') }) // Common Command Code 08: CO_RD_IDBASE
   var res = await sendAndWaitForResponse(cc.getRawBuffer()) // send the telegram asynchronously and wait for response.
   var idbase = res.data.slice(1, 5).toString('hex') // extract idbase
+  console.log(idbase)
 }
 
 // response is not from the receiver but from yor tcm300
