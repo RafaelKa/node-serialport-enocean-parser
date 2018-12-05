@@ -10,7 +10,7 @@ tcm310.on('data', function (esp3Packet) {
 // console.log(ESP3PacketStructure(esp3Packet) + "\n-> To see description for ESP3Packet, comment this line and uncomment next line.");
 // console.log(ESP3PacketDescription(esp3Packet) + "-> if you have an EnOcean Rocker Switch(PTM200), , comment this line and uncomment next line to see how to fetch events from.");
 // console.log(ESP3PacketFromRockerSwitch_PTMXXX(esp3Packet));
-})
+}).on('error', console.error)
 
 function ESP3PacketRawAsString (data) {
   return Buffer.from([data.syncByte]).toString('hex') +
@@ -123,7 +123,7 @@ function ESP3PacketFromRockerSwitchPTMXXX (telegram) {
   } else {
     pushedButtons += 'no'
   }
-  if (secondActionIsPresent == 1) {
+  if (secondActionIsPresent === 1) {
     pushedButtons += ' & ' + buttonName[rockersSecondAction]
   }
 

@@ -16,7 +16,7 @@ const tcm310 = port.pipe(new EnoceanParser())
 /* eslint-disable no-console  */
 tcm310.on('data', function (esp3Packet) {
   console.log(ESP3PacketFromRockerSwitchPTMXXX(esp3Packet))
-})
+}).on('error', console.error)
 
 function ESP3PacketFromRockerSwitchPTMXXX (esp3Packet) {
   if (esp3Packet.RORG !== 0xF6) {
