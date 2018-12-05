@@ -48,8 +48,7 @@ describe('serialport enocean parser', function () {
        */
       it('packets MUST be emitted, if messy bytes occur before the header was detected and there are at least 5 bytes to real sync byte', function () {
         const spy = sinon.spy()
-        esp3SimpleParser.on('data', spy)
-
+        esp3SimpleParser.on('data', spy).on('error', err => err)
         const messyBytes = [ // ESP3 can lose packets if 0x55 occurs in lesser than 5 bytes to real sync byte, therefore no 0x55 is defined on dangerous offsets.
           '55a03d790001',
           '557017af60ff',
@@ -208,6 +207,19 @@ describe('serialport enocean parser', function () {
         assert.equal(spy.args[0][0].subTelGroups[1].RSSI, 0x45, 'Packet not a RadioSubTel')
         assert.equal(spy.args[0][0].subTelGroups[2].status, 0, 'Packet not a RadioSubTel')
         esp3parser.removeListener('data', spy)
+      })
+      it('an error SCHOULD be emmited if the checksum tests fail', function () {
+        const spy = sinon.spy()
+        esp3parser.on('error', spy)
+
+        const wrongHeaderChecksum = Buffer.from('5500010005710838', 'hex')
+        const wrongBodyChecksum = Buffer.from('5500010005700839', 'hex')
+
+        esp3parser.write(wrongHeaderChecksum)
+        esp3parser.write(wrongBodyChecksum)
+
+        assert.equal(spy.args[0][0].code, 1, 'Broken packets are emitted.')
+        assert.equal(spy.args[1][0].code, 2, 'Broken packets are emitted.')
       })
     })
   })
