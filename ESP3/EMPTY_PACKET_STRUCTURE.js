@@ -39,13 +39,13 @@
 const ESP3_EMPTY_PACKET_STRUCTURE = {
   syncByte: 0x55,
   header: {
-    dataLength: undefined,
-    optionalLength: undefined,
-    packetType: undefined
+    dataLength: 0,
+    optionalLength: 0,
+    packetType: 0x80
   },
-  crc8Header: undefined,
-  data: undefined,
-  optionalData: undefined,
-  crc8Data: undefined
+  crc8Header: 0x89,
+  data: Buffer.alloc(0),
+  optionalData: Buffer.alloc(0),
+  crc8Data: 0x00
 }
 module.exports = ESP3_EMPTY_PACKET_STRUCTURE
