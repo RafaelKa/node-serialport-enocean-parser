@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/RafaelKa/node-serialport-enocean-parser.svg?branch=master)](https://travis-ci.com/RafaelKa/node-serialport-enocean-parser)
-![Coveralls github](https://img.shields.io/coveralls/github/RafaelKa/node-serialport-enocean-parser.svg)
+[![Coverage Status](https://coveralls.io/repos/github/RafaelKa/node-serialport-enocean-parser/badge.svg)](https://coveralls.io/github/RafaelKa/node-serialport-enocean-parser)
 [![Standard - JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 # serialport-enocean-parser
