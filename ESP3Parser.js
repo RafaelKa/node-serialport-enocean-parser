@@ -102,7 +102,7 @@ class ESP3Parser extends Transform {
     )
     if (this.getCrc8(datas) != byte) {
       this.emit('error', {
-        code: 1,
+        code: 2,
         name: "BROKEN_TELEGRAMM_ERROR",
         desc: "data checksum test failed",
       });
