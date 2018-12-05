@@ -40,7 +40,7 @@
     "node": ">= 8.4.0"
   },
   "scripts": {
-    "test": "standard && nyc --reporter=text --reporter=html mocha --recursive test",
+    "test": "nyc --reporter=text mocha --recursive test && standard",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "standard"
   }
