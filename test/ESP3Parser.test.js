@@ -157,15 +157,6 @@ describe('serialport enocean parser', function () {
         assert.equal(spy.args[0][0].sendWithDelay, 0, 'wrong "send with delay" switch')
         esp3parser.removeListener('data', spy)
       })
-      it('RADIO_802_15_4 SHOULD be emitted as Radio802 Object', function () {
-        const spy = sinon.spy()
-        esp3parser.on('data', spy)
-        esp3parser.write(Buffer.from('5500040110ceaabbccdd7148', 'hex'))
-        assert.equal(spy.args[0][0].constructor.name, 'Radio802', 'Packet not a RADIO_802_15_4')
-        assert.equal(spy.args[0][0].packetTypeNumber, 16, '')
-        assert.equal(spy.args[0][0].RSSI, 0x71, 'wrong RSSI')
-        esp3parser.removeListener('data', spy)
-      })
       it('Command_2_4 SHOULD be emitted as Command24 Object', function () {
         const spy = sinon.spy()
         esp3parser.on('data', spy)
