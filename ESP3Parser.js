@@ -60,9 +60,9 @@ class ESP3Parser extends Transform {
       this.callbackForNextByte = this.waitForSyncByte
       this.emit('error', {
         code: 1,
-        name: "BROKEN_TELEGRAMM_ERROR",
-        desc: "header checksum test failed",
-      });
+        name: 'WRONG_HEADER_CHECKSUM',
+        desc: 'header checksum test failed'
+      })
       return
     }
     this.currentESP3Packet.crc8Header = byte
@@ -100,12 +100,12 @@ class ESP3Parser extends Transform {
       [this.currentESP3Packet.data, this.currentESP3Packet.optionalData],
       (this.currentESP3Packet.header.dataLength + this.currentESP3Packet.header.optionalLength)
     )
-    if (this.getCrc8(datas) != byte) {
+    if (this.getCrc8(datas) !== byte) {
       this.emit('error', {
         code: 2,
-        name: "BROKEN_TELEGRAMM_ERROR",
-        desc: "data checksum test failed",
-      });
+        name: 'WRONG_BODY_CHECKSUM',
+        desc: 'data checksum test failed'
+      })
       return
     }
     this.currentESP3Packet.crc8Data = byte

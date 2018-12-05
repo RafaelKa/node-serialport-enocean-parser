@@ -8,7 +8,7 @@ const tcm310 = port.pipe(new EnoceanParser())
 /* eslint-disable no-console  */
 tcm310.on('data', function (esp3Packet) {
   ESP3PacketFrom4BSSensor(esp3Packet)
-})
+}).on('error', console.error)
 
 function ESP3PacketFrom4BSSensor (esp3Packet) {
   var sensors = {
