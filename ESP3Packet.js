@@ -1,43 +1,4 @@
-/* jslint node: true */
 'use strict'
-
-/**
- * ESP3 packet structure through the serial port.
- *
- * Sync  is 0x55
- * CRC8H is CRC8 for ‘Header’
- * CRC8D is CRC8 for ‘Datas’ (Data and Optional Data)
- *
- *                   bytes
- *                     ▼
- * +---------------+ -----
- * |   Sync Byte   |   1
- * +---------------+ - + - ----------------------+
- * |               |   2    Data length          |
- * |               |   +                         |
- * |    Header     |   1    Optional Data length |
- * |               |   +                         |
- * |               |   1    Packet type          |
- * +---------------+ - + - ----------------------+
- * |  CRC8 Header  |   1
- * +---------------+ - + -
- * |               |
- * |               |
- * |     Data      |   X
- * |               |
- * |               |
- * +---------------+ - + -
- * |               |
- * |               |
- * | Optional Data |   Y
- * |               |
- * |               |
- * +---------------+ - + -
- * |   CRC8 Data   |   1
- * +---------------+ -----
- *
- * also full ESP3 Packet Length = 7 + X(Data length) + Y(Optional Data length)
- */
 
 class ESP3Packet {
   constructor () {
@@ -81,15 +42,14 @@ class RadioERP1 extends ESP3Packet {
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = 'RADIO_ERP1'
+    this.packetTypeNumber = 1
     this.RORG = this.data[0]
     this.senderId = this.data.slice(this.data.length - 5, this.data.length - 1).toString('hex')
     this.status = this.data[this.data.length - 1]
-    if (this.optionalData.length > 0) {
-      this.subTelNum = this.optionalData[0]
-      this.destinationID = this.optionalData.slice(1, 5).toString('hex')
-      this.dBm = this.optionalData[this.optionalData.length - 2]
-      this.securityLevel = this.optionalData[this.optionalData.length - 1]
-    }
+    this.subTelNum = this.optionalData[0]
+    this.destinationID = this.optionalData.slice(1, 5).toString('hex')
+    this.RSSI = this.optionalData[5]
+    this.securityLevel = this.optionalData[6]
   }
 }
 
@@ -103,9 +63,50 @@ class Response extends ESP3Packet {
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = 'RESPONSE'
-    const CodeNames = ['RET_OK OK', 'RET_ERROR', 'RET_NOT_SUPPORTED', 'RET_WRONG_PARAM', 'RET_OPERATION_DENIED', 'RET_LOCK_SET', 'RET_BUFFER_TO_SMALL', 'RET_NO_FREE_BUFFER']
-    this.returnCode = this.data[0]
-    this.codeName = CodeNames[this.returnCode]
+    this.packetTypeNumber = 2
+    const responseTypes = [
+      { number: 0, name: 'RET_OK' },
+      { number: 1, name: 'RET_ERROR' },
+      { number: 2, name: 'RET_NOT_SUPPORTED' },
+      { number: 3, name: 'RET_WRONG_PARAM' },
+      { number: 4, name: 'RET_OPERATION_DENIED' },
+      { number: 5, name: 'RET_LOCK_SET' },
+      { number: 6, name: 'RET_BUFFER_TO_SMALL' },
+      { number: 7, name: 'RET_NO_FREE_BUFFER' }
+    ]
+    this.responseType = responseTypes[this.data[0]]
+  }
+}
+
+class RadioSubTel extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'RADIO_ERP1'
+    this.packetTypeNumber = 1
+    this.RORG = this.data[0]
+    this.senderId = this.data.slice(this.data.length - 5, this.data.length - 1).toString('hex')
+    this.status = this.data[this.data.length - 1]
+    this.subTelNum = this.optionalData[0]
+    this.destinationID = this.optionalData.slice(1, 5).toString('hex')
+    this.RSSI = this.optionalData[5]
+    this.securityLevel = this.optionalData[6]
+    this.timeStamp = this.optionalData.slice(7, 9).toString('hex')
+    this.subTelGroups = []
+    var offset = 9
+    for (var i = 0; i < this.subTelNum; i++) {
+      var subTel = {
+        tick: this.optionalData[offset + (i * 3)],
+        RSSI: this.optionalData[offset + (i * 3) + 1],
+        status: this.optionalData[offset + (i * 3) + 2]
+      }
+      this.subTelGroups.push(subTel)
+    }
   }
 }
 
@@ -119,9 +120,17 @@ class Event extends ESP3Packet {
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = 'EVENT'
-    const EventNames = ['SA_RECLAIM_NOT_SUCCESSFUL', 'SA_CONFIRM_LEARN', 'SA_LEARN_ACK', 'CO_READY', 'CO_EVENT_SECUREDEVICES', 'CO_DUTYCYCLE_LIMITCO_TRANSMIT_FAILED']
-    this.eventCode = this.data[0]
-    this.eventName = EventNames[this.returnCode]
+    this.packetTypeNumber = 4
+    const eventTypes = [
+      { number: 0, name: 'undefined' },
+      { number: 1, name: 'SA_RECLAIM_NOT_SUCCESSFUL' },
+      { number: 2, name: 'SA_CONFIRM_LEARN' },
+      { number: 3, name: 'SA_LEARN_ACK' },
+      { number: 4, name: 'CO_READY' },
+      { number: 5, name: 'CO_EVENT_SECUREDEVICES' },
+      { number: 6, name: 'CO_DUTYCYCLE_LIMITCO_TRANSMIT_FAILED' }
+    ]
+    this.eventType = eventTypes[this.data[0]]
   }
 }
 
@@ -135,9 +144,182 @@ class CommonCommand extends ESP3Packet {
     this.optionalData = esp3Packet.optionalData
     this.crc8Data = esp3Packet.crc8Data
     this.packetTypeName = 'COMMON_COMMAND'
-    const CommandNames = ['CO_WR_SLEEP', 'CO_WR_RESET', 'CO_RD_VERSION', 'CO_RD_SYS_LOG', 'CO_WR_SYS_LOG', 'CO_WR_BIST', 'CO_WR_IDBASE', 'CO_RD_IDBASE', 'CO_WR_REPEATER', 'CO_RD_REPEATER', 'CO_WR_FILTER_ADD', 'CO_WR_FILTER_DEL', 'CO_WR_FILTER_DEL_ALL', 'CO_WR_FILTER_ENABLE', 'CO_RD_FILTER', 'CO_WR_WAIT_MATURITY', 'CO_WR_SUBTEL', 'CO_WR_MEM', 'CO_RD_MEM', 'CO_RD_MEM_ADDRESS', 'CO_RD_SECURITY', 'CO_WR_SECURITY', 'CO_WR_LEARNMODE', 'CO_RD_LEARNMODE', 'CO_WR_SECUREDEVICE_ADD', 'CO_WR_SECUREDEVICE_DEL', 'CO_RD_SECUREDEVICE_BY_INDEX', 'CO_WR_MODE', 'CO_RD_NUMSECUREDEVICES', 'CO_RD_SECUREDEVICE_BY_ID', 'CO_WR_SECUREDEVICE_ADD_PSK', 'CO_WR_SECUREDEVICE_SENDTEACHIN', 'CO_WR_TEMPORARY_RLC_WINDOW', 'CO_RD_SECUREDEVICE_PSK', 'CO_RD_DUTYCYCLE_LIMIT', 'CO_SET_BAUDRATE', 'CO_GET_FREQUENCY_INFO', 'Reserved', 'CO_GET_STEPCODE', 'Reserved', 'Reserved', 'Reserved', 'Reserved', 'Reserved', 'Reserved', 'CO_WR_REMAN_CODE', 'CO_WR_STARTUP_DELAY', 'CO_WR_REMAN_REPEATING', 'CO_RD_REMAN_REPEATING', 'CO_SET_NOISETHRESHOLD', 'CO_GET_NOISETHRESHOLD']
-    this.commandCode = this.data[0]
-    this.eventName = CommandNames[this.returnCode]
+    this.packetTypeNumber = 5
+    const commandTypes = [
+      { number: 0, name: 'undefiend' },
+      { number: 1, name: 'CO_WR_SLEEP' },
+      { number: 2, name: 'CO_WR_RESET' },
+      { number: 3, name: 'CO_RD_VERSION' },
+      { number: 4, name: 'CO_RD_SYS_LOG' },
+      { number: 5, name: 'CO_WR_SYS_LOG' },
+      { number: 6, name: 'CO_WR_BIST' },
+      { number: 7, name: 'CO_WR_IDBASE' },
+      { number: 8, name: 'CO_RD_IDBASE' },
+      { number: 9, name: 'CO_WR_REPEATER' },
+      { number: 10, name: 'CO_RD_REPEATER' },
+      { number: 11, name: 'CO_WR_FILTER_ADD' },
+      { number: 12, name: 'CO_WR_FILTER_DEL' },
+      { number: 13, name: 'CO_WR_FILTER_DEL_ALL' },
+      { number: 14, name: 'CO_WR_FILTER_ENABLE' },
+      { number: 15, name: 'CO_RD_FILTER' },
+      { number: 16, name: 'CO_WR_WAIT_MATURITY' },
+      { number: 17, name: 'CO_WR_SUBTEL' },
+      { number: 18, name: 'CO_WR_MEM' },
+      { number: 19, name: 'CO_RD_MEM' },
+      { number: 20, name: 'CO_RD_MEM_ADDRESS' },
+      { number: 21, name: 'CO_RD_SECURITY' },
+      { number: 22, name: 'CO_WR_SECURITY' },
+      { number: 23, name: 'CO_WR_LEARNMODE' },
+      { number: 24, name: 'CO_RD_LEARNMODE' },
+      { number: 25, name: 'CO_WR_SECUREDEVICE_ADD' },
+      { number: 26, name: 'CO_WR_SECUREDEVICE_DEL' },
+      { number: 27, name: 'CO_RD_SECUREDEVICE_BY_INDEX' },
+      { number: 28, name: 'CO_WR_MODE' },
+      { number: 29, name: 'CO_RD_NUMSECUREDEVICES' },
+      { number: 30, name: 'CO_RD_SECUREDEVICE_BY_ID' },
+      { number: 31, name: 'CO_WR_SECUREDEVICE_ADD_PSK' },
+      { number: 32, name: 'CO_WR_SECUREDEVICE_SENDTEACHIN' },
+      { number: 33, name: 'CO_WR_TEMPORARY_RLC_WINDOW' },
+      { number: 34, name: 'CO_RD_SECUREDEVICE_PSK' },
+      { number: 35, name: 'CO_RD_DUTYCYCLE_LIMIT' },
+      { number: 37, name: 'CO_SET_BAUDRATE' },
+      { number: 38, name: 'CO_GET_FREQUENCY_INFO' },
+      { number: 40, name: 'Reserved' },
+      { number: 41, name: 'CO_GET_STEPCODE' },
+      { number: 42, name: 'Reserved' },
+      { number: 43, name: 'Reserved' },
+      { number: 44, name: 'Reserved' },
+      { number: 45, name: 'Reserved' },
+      { number: 46, name: 'Reserved' },
+      { number: 47, name: 'Reserved' },
+      { number: 48, name: 'CO_WR_REMAN_CODE' },
+      { number: 49, name: 'CO_WR_STARTUP_DELAY' },
+      { number: 50, name: 'CO_WR_REMAN_REPEATING' },
+      { number: 51, name: 'CO_RD_REMAN_REPEATING' },
+      { number: 52, name: 'CO_SET_NOISETHRESHOLD' },
+      { number: 53, name: 'CO_GET_NOISETHRESHOLD' }
+    ]
+    this.commandType = commandTypes[this.data[0]]
+  }
+}
+
+class SmartAckCommand extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'SMART_ACK_COMMAND'
+    this.packetTypeNumber = 6
+    const commandTypes = [
+      { number: 0, name: 'undefined' },
+      { number: 1, name: 'SA_WR_LEARNMODE' },
+      { number: 2, name: 'SA_RD_LEARNMODE' },
+      { number: 3, name: 'SA_WR_LEARNCONFIRM' },
+      { number: 4, name: 'SA_WR_CLIENTLEARNRQ' },
+      { number: 5, name: 'SA_WR_RESET' },
+      { number: 6, name: 'SA_RD_LEARNEDCLIENTS' },
+      { number: 7, name: 'SA_WR_RECLAIMS' },
+      { number: 8, name: 'SA_WR_POSTMASTER' }
+    ]
+    this.commandType = commandTypes[this.data[0]]
+  }
+}
+class RemoteManCommand extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'REMOTE_MAN_COMMAND'
+    this.packetTypeNumber = 7
+    this.function = parseInt(this.data.slice(0, 2).toString('hex'), 16)
+    this.manufacturerID = parseInt(this.data.slice(2, 4).toString('hex'), 16)
+    this.msg = this.data.slice(4, this.data.length)
+    this.destinationID = this.optionalData.slice(0, 4).toString('hex')
+    this.sourceID = this.optionalData.slice(4, 8).toString('hex')
+    this.RSSI = this.optionalData[this.optionalData.length - 2]
+    this.sendWithDelay = this.optionalData[this.optionalData.length - 1]
+  }
+}
+class RadioMessage extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'RADIO_MESSAGE'
+    this.packetTypeNumber = 9
+    this.RORG = this.data[0]
+    this.content = this.data.slice(1, this.data.length)
+    this.destinationID = this.optionalData.slice(0, 4).toString('hex')
+    this.sourceID = this.optionalData.slice(4, 8).toString('hex')
+    this.RSSI = this.optionalData[this.optionalData.length - 2]
+    this.securityLevel = this.optionalData[this.optionalData.length - 1]
+  }
+}
+
+class RadioERP2 extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'RADIO_ERP2'
+    this.packetTypeNumber = 10
+    this.subTelNum = this.optionalData[0]
+    this.RSSI = this.optionalData[1]
+    this.securityLevel = this.optionalData[2]
+  }
+}
+
+class Radio802 extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'RADIO_802_15_4'
+    this.packetTypeNumber = 16
+    this.RSSI = this.optionalData[0]
+  }
+}
+
+class Command24 extends ESP3Packet {
+  constructor (esp3Packet) {
+    super()
+    this.syncByte = 0x55
+    this.header = esp3Packet.header
+    this.crc8Header = esp3Packet.crc8Header
+    this.data = esp3Packet.data
+    this.optionalData = esp3Packet.optionalData
+    this.crc8Data = esp3Packet.crc8Data
+    this.packetTypeName = 'Command_2_4'
+    this.packetTypeNumber = 17
+    const commandTypes = [
+      { number: 0, name: 'undefined' },
+      { number: 1, name: 'SET_CHANNEL' },
+      { number: 2, name: 'GET_CHANNEL' }
+    ]
+    this.commandType = commandTypes[this.data[0]]
+    if (this.data[0] === 1) {
+      this.channel = this.data[1]
+    }
   }
 }
 
@@ -145,6 +327,13 @@ module.exports = {
   'ESP3Packet': ESP3Packet,
   'RadioERP1': RadioERP1,
   'Response': Response,
+  'RadioSubTel': RadioSubTel,
   'Event': Event,
-  'CommonCommand': CommonCommand
+  'CommonCommand': CommonCommand,
+  'SmartAckCommand': SmartAckCommand,
+  'RemoteManCommand': RemoteManCommand,
+  'RadioMessage': RadioMessage,
+  'RadioERP2': RadioERP2,
+  'Radio802': Radio802,
+  'Command24': Command24
 }
