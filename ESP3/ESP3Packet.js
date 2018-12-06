@@ -4,9 +4,9 @@ class ESP3Packet {
   constructor (packet = emptyPacket) {
     this.syncByte = 0x55
     this.header = {
-      dataLength: packet.dataLength,
-      optionalLength: packet.optionalLength,
-      packetType: packet.packetType
+      dataLength: packet.header.dataLength,
+      optionalLength: packet.header.optionalLength,
+      packetType: packet.header.packetType
     }
     this.crc8Header = packet.crc8Header
     this.data = packet.data
