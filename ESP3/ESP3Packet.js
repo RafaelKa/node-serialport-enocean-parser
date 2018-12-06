@@ -63,6 +63,19 @@ class ESP3Packet {
     this.optionalData = packet.optionalData || this.optionalData
     this._rebuild()
   }
+  send (port, parser) {
+    return new Promise((resolve, reject) => {
+      var cb = data => {
+        if (data.header.packetType === 2) {
+          resolve(data)
+          parser.removeListener('data', cb)
+        }
+      }
+      parser.on('data', cb)
+      console.log(this.getRawBuffer().toString('hex'))
+      port.write(this.getRawBuffer())
+    })
+  }
 }
 
 module.exports = ESP3Packet

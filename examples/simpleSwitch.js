@@ -25,12 +25,7 @@ async function init () {
   var offset = 1
   var idbase = await getBaseId()
   var addr = (idbase + offset).toString(16)
-  console.log(`
-    Your TCMs BaseId is ${idbase.toString(16)},
-    your channel offset is ${offset},
-    that makes your current adress ${addr}
-
-    Type "on" or "off" to switch your light on and off`)
+  console.log(`Your TCMs BaseId is ${addr}`)
 
   rocker = new RockerSwitch(addr, port, parser)
 }
@@ -38,6 +33,6 @@ async function init () {
 async function getBaseId () {
   var cc = new Packet.CommonCommand()
   cc.load({ data: Buffer.from('08', 'hex') }) // Common Command Code 08: CO_RD_IDBASE
-  var res = await sendAndWaitForResponse(cc.getRawBuffer()) // send the telegram asynchronously and wait for response.
+  var res = await cc.send(port, parser)
   return parseInt(res.data.slice(1, 5).toString('hex'), 16)
 }
