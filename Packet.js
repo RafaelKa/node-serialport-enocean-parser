@@ -15,18 +15,18 @@ const packetPrototypes = {
 }
 
 module.exports = {
-  'ESP3Packet': require('./ESP3/ESP3Packet.js'),
-  'RadioERP1': require('./ESP3/PacketTypes/RadioERP1.js'),
-  'Response': require('./ESP3/PacketTypes/Response'),
-  'RadioSubTel': require('./ESP3/PacketTypes/RadioSubTel'),
-  'Event': require('./ESP3/PacketTypes/Event'),
-  'CommonCommand': require('./ESP3/PacketTypes/CommonCommand'),
-  'SmartAckCommand': require('./ESP3/PacketTypes/SmartAckCommand'),
-  'RemoteManCommand': require('./ESP3/PacketTypes/RemoteManCommand'),
-  'RadioMessage': require('./ESP3/PacketTypes/RadioMessage'),
-  'RadioERP2': require('./ESP3/PacketTypes/RadioERP2'),
-  'Radio802': require('./ESP3/PacketTypes/Radio802'),
-  'Command24': require('./ESP3/PacketTypes/Command24'),
+  'ESP3Packet': packetPrototypes[0],
+  'RadioERP1': packetPrototypes[1]),
+  'Response': packetPrototypes[2],
+  'RadioSubTel': packetPrototypes[3],
+  'Event': packetPrototypes[4],
+  'CommonCommand': packetPrototypes[5],
+  'SmartAckCommand': packetPrototypes[6],
+  'RemoteManCommand': packetPrototypes[7],
+  'RadioMessage': packetPrototypes[9],
+  'RadioERP2': packetPrototypes[10],
+  'Radio802': packetPrototypes[16],
+  'Command24': packetPrototypes[17],
   from: function (input) {
     if (input instanceof packetPrototypes[0]) {
       return new packetPrototypes[input.header.packetType](input)
