@@ -16,10 +16,10 @@ rl.on('line', async (input) => {
   if (input === 'off') mode = 0x30
   // send button press event
   rocker.payload = mode
-  res = await sendAndWaitForResponse(rocker.getRawBuffer())
+  await sendAndWaitForResponse(rocker.getRawBuffer())
   // send button release event
   rocker.payload = 0x00
-  res = await sendAndWaitForResponse(rocker.getRawBuffer())
+  await sendAndWaitForResponse(rocker.getRawBuffer())
 })
 
 async function init () {
