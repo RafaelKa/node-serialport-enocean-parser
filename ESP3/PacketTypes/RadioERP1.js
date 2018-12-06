@@ -29,6 +29,13 @@ class RadioERP1 extends ESP3Packet {
     }
     this._rebuild()
   }
+  get payload () {
+    return this.data[1]
+  }
+  set payload (p) {
+    this.data[1] = p
+    this._rebuild()
+  }
 }
 
 module.exports = RadioERP1
