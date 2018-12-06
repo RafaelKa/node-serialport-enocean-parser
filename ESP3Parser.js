@@ -5,7 +5,7 @@
 // Copyright 2018 Holger Will <h.will@klimapartner.de>
 
 const Transform = require('stream').Transform
-const Packets = require('./ESP3Packet')
+const Packets = require('./Packet')
 
 // Emit a data event by recognizing ESP3 packets
 // Data contains ESP3Packet
