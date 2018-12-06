@@ -16,7 +16,7 @@ const packetPrototypes = {
 
 module.exports = {
   'ESP3Packet': packetPrototypes[0],
-  'RadioERP1': packetPrototypes[1]),
+  'RadioERP1': packetPrototypes[1],
   'Response': packetPrototypes[2],
   'RadioSubTel': packetPrototypes[3],
   'Event': packetPrototypes[4],
